@@ -31,8 +31,16 @@ export default class QueryController {
 
     public query(query: QueryRequest): QueryResponse {
         Log.trace('QueryController::query( ' + JSON.stringify(query) + ' )');
+        Log.trace('????');
+
+        var resp: QueryResponse
+        let as = query.AS;
+        let order = query.ORDER;
+        let get = query.GET;
+
+
 
         // TODO: implement this
-        return {status: 'received', ts: new Date().getTime()};
+        return {Result: "test", Order: order, Get: get, As:as, ts: new Date().getTime()};
     }
 }

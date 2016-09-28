@@ -53,15 +53,39 @@ export default class DatasetController {
         return new Promise(function (fulfill, reject) {
             try {
                 let myZip = new JSZip();
+
+
                 myZip.loadAsync(data, {base64: true}).then(function (zip: JSZip) {
                     Log.trace('DatasetController::process(..) - unzipped');
 
                     let processedDataset = {};
+
                     // TODO: iterate through files in zip (zip.files)
                     // The contents of the file will depend on the id provided. e.g.,
                     // some zips will contain .html files, some will contain .json files.
                     // You can depend on 'id' to differentiate how the zip should be handled,
                     // although you should still be tolerant to errors.
+
+                    myZip.forEach(function(relativePath: string, file: JSZipObject) {
+                        if (file.dir) {
+                            //skip the courses folder and go directly to course files inside
+                        }
+
+                        file.async("string").then(function (data) { //for each course file
+                            //Log.trace(data); //test to print raw contents
+
+                            var course = JSON.parse(data);
+
+                            var coursesubject = course.subject;
+                            Log.trace(coursesubject);
+
+                        })
+
+                    });
+
+
+                    //  this.datasets["courses"]= processedDataset;
+
 
                     that.save(id, processedDataset);
 

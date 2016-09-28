@@ -21,6 +21,7 @@ describe("DatasetController", function () {
         let content = {key: 'value'};
         let zip = new JSZip();
         zip.file('content.obj', JSON.stringify(content));
+        zip.file('content2.obj', JSON.stringify(content));
         const opts = {
             compression: 'deflate', compressionOptions: {level: 2}, type: 'base64'
         };
@@ -34,5 +35,11 @@ describe("DatasetController", function () {
         });
 
     });
+
+    it('Print myZip', function() {
+        Log.test("asdf");
+    });
+
+
 
 });
