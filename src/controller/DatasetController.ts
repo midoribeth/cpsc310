@@ -50,6 +50,9 @@ export default class DatasetController {
         Log.trace('DatasetController::process( ' + id + '... )');
 
         let that = this;
+        var dict: { [course: string]: {} } = { }; //dictionary
+
+
         return new Promise(function (fulfill, reject) {
             try {
                 let myZip = new JSZip();
@@ -57,6 +60,7 @@ export default class DatasetController {
 
                 myZip.loadAsync(data, {base64: true}).then(function (zip: JSZip) {
                     Log.trace('DatasetController::process(..) - unzipped');
+
 
                     let processedDataset = {};
 
@@ -66,30 +70,35 @@ export default class DatasetController {
                     // You can depend on 'id' to differentiate how the zip should be handled,
                     // although you should still be tolerant to errors.
 
-                    myZip.forEach(function(relativePath: string, file: JSZipObject) {
-                        if (file.dir) {
-                            //skip the courses folder and go directly to course files inside
+                    zip.forEach(function(relativePath: string, file: JSZipObject) {
+                        if (!file.dir) { //skip the courses folder and go directly to course files inside
+
+                            file.async("string").then(function (data) { //for each course file
+
+                                var coursedata = JSON.parse(data); // make file data a JSON object "coursedata"
+                                var coursename = file.name.substring(8); //substring 8 to get rid of "courses/"
+                                Log.trace("Course Name: " + coursename); //print out JSON object associated w/ each course section
+     
+                                dict[coursename]= coursedata; //save coursedata to dict[coursename]
+                                dict["test2"]="test2"; // doesn't work
+                          //      Log.trace("PRINT INSIDE[]: " + JSON.stringify(dict["ADHE329"])); // but if you print in the loop it works
+                            })
                         }
-
-                        file.async("string").then(function (data) { //for each course file
-                            //Log.trace(data); //test to print raw contents
-
-                            var course = JSON.parse(data);
-
-                            var coursesubject = course.subject;
-                            Log.trace(coursesubject);
-
-                        })
-
                     });
 
+                    dict["test1"]="test1";
+                    Log.trace("PRINT DICT[]: " + JSON.stringify(dict["ADHE329"])); //print out contents of ADHE329 from dict, doesn't work bc asyn
+                    Log.trace("PRINT DICT['test1']: " + dict["test1"]); //this works since dict["test1"]="test1" happens outside the loop
+                    Log.trace("PRINT DICT['test2']: " + dict["test2"]); //doesn't work since dict["test2"]="test2" happens inside loop
 
-                    //  this.datasets["courses"]= processedDataset;
 
-
-                    that.save(id, processedDataset);
+                    processedDataset= dict; //set our dictionary to the processeddataset
+                    that.save(id, processedDataset); // ***need to make sure this is done after all the loops
 
                     fulfill(true);
+
+
+
                 }).catch(function (err) {
                     Log.trace('DatasetController::process(..) - unzip ERROR: ' + err.message);
                     reject(err);
@@ -98,7 +107,12 @@ export default class DatasetController {
                 Log.trace('DatasetController::process(..) - ERROR: ' + err);
                 reject(err);
             }
+
+
         });
+
+
+
     }
 
     /**
