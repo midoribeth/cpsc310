@@ -16,6 +16,7 @@ export default class DatasetController {
 
     private datasets: Datasets = {};
 
+
     constructor() {
         Log.trace('DatasetController::init()');
     }
@@ -52,14 +53,15 @@ export default class DatasetController {
         let that = this;
         var dict: { [course: string]: {} } = { }; //dictionary
 
+        var promises = [];
 
-        return new Promise(function (fulfill, reject) {
+        var p1 = new Promise(function (fulfill, reject) {
             try {
                 let myZip = new JSZip();
 
-
                 myZip.loadAsync(data, {base64: true}).then(function (zip: JSZip) {
                     Log.trace('DatasetController::process(..) - unzipped');
+
 
 
                     let processedDataset = {};
@@ -70,33 +72,39 @@ export default class DatasetController {
                     // You can depend on 'id' to differentiate how the zip should be handled,
                     // although you should still be tolerant to errors.
 
+
+
                     zip.forEach(function(relativePath: string, file: JSZipObject) {
                         if (!file.dir) { //skip the courses folder and go directly to course files inside
 
-                            file.async("string").then(function (data) { //for each course file
+                            var p2 = file.async("string").then(function (data) { //for each course file
 
                                 var coursedata = JSON.parse(data); // make file data a JSON object "coursedata"
                                 var coursename = file.name.substring(8); //substring 8 to get rid of "courses/"
-                                Log.trace("Course Name: " + coursename); //print out JSON object associated w/ each course section
-     
+                                //Log.trace("Course Name: " + coursename); //print out JSON object associated w/ each course section
+
                                 dict[coursename]= coursedata; //save coursedata to dict[coursename]
                                 dict["test2"]="test2"; // doesn't work
-                          //      Log.trace("PRINT INSIDE[]: " + JSON.stringify(dict["ADHE329"])); // but if you print in the loop it works
+                                // Log.trace("PRINT INSIDE[]: " + JSON.stringify(dict["ADHE329"])); // but if you print in the loop it works
                             })
+
+                            promises.push(p2);
+
                         }
+
                     });
 
-                    dict["test1"]="test1";
-                    Log.trace("PRINT DICT[]: " + JSON.stringify(dict["ADHE329"])); //print out contents of ADHE329 from dict, doesn't work bc asyn
-                    Log.trace("PRINT DICT['test1']: " + dict["test1"]); //this works since dict["test1"]="test1" happens outside the loop
-                    Log.trace("PRINT DICT['test2']: " + dict["test2"]); //doesn't work since dict["test2"]="test2" happens inside loop
-
-
-                    processedDataset= dict; //set our dictionary to the processeddataset
-                    that.save(id, processedDataset); // ***need to make sure this is done after all the loops
-
-                    fulfill(true);
-
+                    Promise.all(promises).then(function() {
+                        fulfill(true);
+                        processedDataset = dict; //set our dictionary to the processedDataset
+                        Log.trace("PRINT DICT[]: " + JSON.stringify(processedDataset["AANB500"]));
+                        //that.save(id, processedDataset);
+                    });
+                    
+                    //dict["test1"] = "test1";
+                    //Log.trace("PRINT DICT[]: " + JSON.stringify(dict["ADHE329"])); //print out contents of ADHE329 from dict, doesn't work bc asyn
+                    //Log.trace("PRINT DICT['test1']: " + dict["test1"]); //this works since dict["test1"]="test1" happens outside the loop
+                    //Log.trace("PRINT DICT['test2']: " + dict["test2"]); //doesn't work since dict["test2"]="test2" happens inside loop
 
 
                 }).catch(function (err) {
@@ -112,6 +120,7 @@ export default class DatasetController {
         });
 
 
+        return p1;
 
     }
 
@@ -124,8 +133,17 @@ export default class DatasetController {
      */
     private save(id: string, processedDataset: any) {
         // add it to the memory model
-        this.datasets[id] = processedDataset;
+        //this.datasets[id] = processedDataset;
 
         // TODO: actually write to disk in the ./data directory
+        var fs = require('./data');
+        fs.writeFile('id.json', processedDataset, function(err) {
+            if (err) {
+                Log.trace(err);
+            }
+
+            Log.trace("The dataset was saved.");
+        });
+
     }
 }

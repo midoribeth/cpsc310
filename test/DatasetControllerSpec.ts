@@ -40,6 +40,4 @@ describe("DatasetController", function () {
         Log.test("asdf");
     });
 
-
-
 });
