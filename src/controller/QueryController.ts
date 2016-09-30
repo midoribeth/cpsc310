@@ -31,7 +31,14 @@ export default class QueryController {
 
     public query(query: QueryRequest): QueryResponse {
         Log.trace('QueryController::query( ' + JSON.stringify(query) + ' )');
-        Log.trace('????');
+
+        var fs = require('fs');
+        fs.readFile('./data/1.json', (err, data) => {
+            if (err) throw err;
+            var course =JSON.parse(data);
+            Log.trace("Print first professor of ENGL112 from ./data: "+course["ENGL112"].result[0].Professor); //testing getting info from ./data
+        });
+
 
         var resp: QueryResponse;
         let as = query.AS;
@@ -40,10 +47,7 @@ export default class QueryController {
 
         // TODO: implement this
 
-        var resp: QueryResponse;
-        let as = query.AS;
-        let order = query.ORDER;
-        let get = query.GET;
+
 
         return {Result: "test", Order: order, Get: get, As: as, ts: new Date().getTime()};
     }

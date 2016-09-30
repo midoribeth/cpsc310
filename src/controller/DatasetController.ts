@@ -142,6 +142,7 @@ export default class DatasetController {
         var fs = require('fs');
         var dir = './data';
 
+        if (!fs.existsSync(dir)){       //if ./data directory doesn't already exist, create
             fs.mkdirSync(dir);
         }
 
