@@ -97,8 +97,8 @@ export default class DatasetController {
                     Promise.all(promises).then(function() {
                         fulfill(true);
                         processedDataset = dict; //set our dictionary to the processedDataset
-                        Log.trace("PRINT DICT[]: " + JSON.stringify(processedDataset["AANB500"]));
-                        //that.save(id, processedDataset);
+                     //   Log.trace("PRINT DICT[]: " + JSON.stringify(processedDataset["AANB500"]));
+                        that.save(id, processedDataset);
                     });
                     
                     //dict["test1"] = "test1";
@@ -133,16 +133,23 @@ export default class DatasetController {
      */
     private save(id: string, processedDataset: any) {
         // add it to the memory model
-        //this.datasets[id] = processedDataset;
+
+        this.datasets[id] = processedDataset;
 
         // TODO: actually write to disk in the ./data directory
-        var fs = require('./data');
-        fs.writeFile('id.json', processedDataset, function(err) {
-            if (err) {
-                Log.trace(err);
-            }
 
-            Log.trace("The dataset was saved.");
+
+        var fs = require('fs');
+        var dir = './data';
+
+            fs.mkdirSync(dir);
+        }
+
+        fs.writeFile("./data/" +id+ '.json', JSON.stringify(processedDataset), function (err) {
+            if (err) {
+                return Log.trace("Error writing file");
+            }
+            Log.trace('Saved to /data');
         });
 
     }
