@@ -32,23 +32,45 @@ export default class QueryController {
     public query(query: QueryRequest): QueryResponse {
         Log.trace('QueryController::query( ' + JSON.stringify(query) + ' )');
 
-        var fs = require('fs');
-        fs.readFile('./data/1.json', (err, data) => {
-            if (err) throw err;
-            var course =JSON.parse(data);
-            Log.trace("Print first professor of ENGL112 from ./data: "+course["ENGL112"].result[0].Professor); //testing getting info from ./data
-        });
+            var dict = this.datasets["courses"];
+
+        // course object filtering example
+
+            for (var key in dict) { //for every course object in the dictionary
+
+                var result=[];
+
+                for(var i= 0, len = dict[key].result.length; i < len; i++) { //for every result in course object
+                    var section = dict[key].result[i];
 
 
-        var resp: QueryResponse;
-        let as = query.AS;
-        let order = query.ORDER;
-        let get = query.GET;
+                        result.push(section);
+                    }
+                  }
+            }
 
+         Log.trace(JSON.stringify(result[0]));  // prints the first course object fulfilling the criteria
+
+
+
+
+        var response: QueryResponse;
+
+        let queryget = query.GET;
+        Log.trace("GET: " + JSON.stringify(queryget));
+
+        let querywhere = query.WHERE;
+        Log.trace("WHERE: " + JSON.stringify(querywhere));
+
+        let queryorder = query.ORDER;
+        Log.trace("ORDER: " + JSON.stringify(queryorder));
+
+        let queryas = query.AS;
+        Log.trace("AS: " + JSON.stringify(queryas));
         // TODO: implement this
 
 
 
-        return {Result: "test", Order: order, Get: get, As: as, ts: new Date().getTime()};
+        return {Result: "test", Get: queryget, ts: new Date().getTime()};
     }
 }

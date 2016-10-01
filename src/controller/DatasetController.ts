@@ -83,8 +83,13 @@ export default class DatasetController {
                                 var coursename = file.name.substring(8); //substring 8 to get rid of "courses/"
                                 //Log.trace("Course Name: " + coursename); //print out JSON object associated w/ each course section
 
-                                dict[coursename]= coursedata; //save coursedata to dict[coursename]
-                                dict["test2"]="test2"; // doesn't work
+                                if (!(typeof (coursedata.result[0]) == 'undefined')) {  //don't save courses without results
+                                    dict[coursename] = coursedata; //save coursedata to dict[coursename]
+                                }
+
+
+
+
                                 // Log.trace("PRINT INSIDE[]: " + JSON.stringify(dict["ADHE329"])); // but if you print in the loop it works
                             })
 
