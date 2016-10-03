@@ -53,7 +53,7 @@ export default class DatasetController {
         let that = this;
         var dict: { [course: string]: {} } = { }; //dictionary
 
-        var promises = [];
+        var promises: any=[];
 
         var p1 = new Promise(function (fulfill, reject) {
             try {
@@ -93,19 +93,19 @@ export default class DatasetController {
                                 // Log.trace("PRINT INSIDE[]: " + JSON.stringify(dict["ADHE329"])); // but if you print in the loop it works
                             })
 
-                            promises.push(p2);
+                       promises.push(p2);
 
                         }
 
                     });
 
-                    Promise.all(promises).then(function() {
+                  Promise.all(promises).then(function() {
                         fulfill(true);
                         processedDataset = dict; //set our dictionary to the processedDataset
                      //   Log.trace("PRINT DICT[]: " + JSON.stringify(processedDataset["AANB500"]));
                         that.save(id, processedDataset);
                     });
-                    
+
                     //dict["test1"] = "test1";
                     //Log.trace("PRINT DICT[]: " + JSON.stringify(dict["ADHE329"])); //print out contents of ADHE329 from dict, doesn't work bc asyn
                     //Log.trace("PRINT DICT['test1']: " + dict["test1"]); //this works since dict["test1"]="test1" happens outside the loop
@@ -151,7 +151,7 @@ export default class DatasetController {
             fs.mkdirSync(dir);
         }
 
-        fs.writeFile("./data/" +id+ '.json', JSON.stringify(processedDataset), function (err) {
+      fs.writeFile("./data/" +id+ '.json', JSON.stringify(processedDataset), function (err:any) {
             if (err) {
                 return Log.trace("Error writing file");
             }
