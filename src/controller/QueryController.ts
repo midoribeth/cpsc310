@@ -34,7 +34,7 @@ export default class QueryController {
 
             var response: QueryResponse;
             var dict:any = this.datasets["courses"];
-           // var result:any;
+            var result:any=[];
 
 
         /* course object filtering example
@@ -69,7 +69,8 @@ export default class QueryController {
                         for (var i = 0, len = dict[key].result.length; i < len; i++) { //for every result in course object
                             let section = dict[key].result[i];
                             if (section.Avg > where.GT.courses_avg) {
-                              //  Log.trace("courses_avg: " + section.Avg);
+                                result.push(section);
+
                             }
                         }
                     }
@@ -81,7 +82,15 @@ export default class QueryController {
 
             GT();
         }
+       var final:any = '{"render": "TABLE","result":[';
+        function get (){
+            for (var r in result){
 
+                final += '{"courses_dept":' + '"' + result[r].Subject+'",';
+                final += '"courses_avg":'  + result[r].Avg+ '},'
+            }
+        }
+        final = final.substring(0, final.length-1) + ']}';
 
 
         let queryorder = query.ORDER;
@@ -92,6 +101,8 @@ export default class QueryController {
 
 
 
-        return {render: "TABLE", Get: queryget, ts: new Date().getTime()};
+        var result:any = JSON.parse(final);
+
+        return result;
     }
 }
