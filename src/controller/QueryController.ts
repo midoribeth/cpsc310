@@ -34,25 +34,9 @@ export default class QueryController {
 
             var response: QueryResponse;
             var dict:any = this.datasets["courses"];
-            var result:any=[];
+            var resultarray:any=[];
 
 
-        /* course object filtering example
-
-            for (var key in dict) { //for every course object in the dictionary
-                for(var i= 0, len = dict[key].result.length; i < len; i++) { //for every result in course object
-                    var section = dict[key].result[i];
-
-                    if( section.Avg > 80) { // so we would have to adjust this based on query.WHERE's filters,
-                                            // e.g. query.WHERE = {"GT":{"courses_avg":"90"}}, which is a JSON object
-
-                        result.push(section);
-                    }
-                  }
-            }
-
-
-*/
         Log.trace(JSON.stringify(dict["ENGL112"].result[0].Professor));
         let queryget = query.GET;
         Log.trace("GET: " + JSON.stringify(queryget));
@@ -69,7 +53,13 @@ export default class QueryController {
                         for (var i = 0, len = dict[key].result.length; i < len; i++) { //for every result in course object
                             let section = dict[key].result[i];
                             if (section.Avg > where.GT.courses_avg) {
-                                result.push(section);
+
+                                var r:any = {
+                                    courses_avg: section.Avg,
+                                    courses_dept: section.Subject
+
+                                };
+                                resultarray.push(r);
 
                             }
                         }
@@ -82,26 +72,19 @@ export default class QueryController {
 
             GT();
         }
-       var final:any = '{"render": "TABLE","result":[';
-        function get (){
-            for (var r in result){
-
-                final += '{"courses_dept":' + '"' + result[r].Subject+'",';
-                final += '"courses_avg":'  + result[r].Avg+ '},'
-            }
-        }
-        final = final.substring(0, final.length-1) + ']}';
 
 
-        let queryorder = query.ORDER;
+
+
+       /* let queryorder = query.ORDER;
         Log.trace("ORDER: " + JSON.stringify(queryorder));
 
         let queryas = query.AS;
         Log.trace("AS: " + JSON.stringify(queryas));
+       */
 
 
-
-        var result:any = JSON.parse(final);
+        var result:any =JSON.parse(JSON.stringify({render: "TABLE",result:resultarray}));
 
         return result;
     }

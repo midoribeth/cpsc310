@@ -49,23 +49,22 @@ export default class RouteHandler {
 
                 let controller = RouteHandler.datasetController;
                 controller.process(id, req.body).then(function (result) {
-
-                   //check if file with ID already exists in ./data and sends response code
-                    var fs = require('fs'),
+    //check if file with ID already exists in ./data and sends response code
+                   var fs = require('fs'),
                         path = './data/'+ id+".json",
                         stats:any;
 
                     try {
                         stats = fs.statSync(path);
                         Log.trace("File already exists.");
-                        res.send(201);
+                       //201
                     }
                     catch (e) {
                         Log.trace("File does not already exist.");
-                        res.send(204);
+                        //204
                     }
 
-                    Log.trace('RouteHandler::postDataset(..) - processed');
+                 Log.trace('RouteHandler::postDataset(..) - processed');
                     res.json(200, {success: result});
                 }).catch(function (err: Error) {
                     Log.trace('RouteHandler::postDataset(..) - ERROR: ' + err.message);
