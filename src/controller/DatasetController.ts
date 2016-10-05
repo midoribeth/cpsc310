@@ -179,4 +179,12 @@ export default class DatasetController {
         });
 
     }
+
+
+    public delete(id: string) {
+        var fs = require('fs');
+        var path = './data/' + id + '.json';
+        fs.unlink(path);
+    }
+
 }
