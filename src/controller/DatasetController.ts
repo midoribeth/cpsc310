@@ -82,9 +82,29 @@ export default class DatasetController {
                                 var coursedata = JSON.parse(data); // make file data a JSON object "coursedata"
                                 var coursename = file.name.substring(8); //substring 8 to get rid of "courses/"
                                 //Log.trace("Course Name: " + coursename); //print out JSON object associated w/ each course section
-
+                                var pcdarray:any=[];
                                 if (!(typeof (coursedata.result[0]) == 'undefined')) {  //don't save courses without results
-                                    dict[coursename] = coursedata; //save coursedata to dict[coursename]
+                                    for (var i=0; i<coursedata.result.length; i++){  //rename subject, professor and course
+
+                                        var processedcoursedata = {
+
+                                            dept: coursedata.result[i].Subject,
+                                            id: coursedata.result[i].Course,
+                                            avg: coursedata.result[i].Avg,
+                                            instructor: coursedata.result[i].Professor,
+                                            title: coursedata.result[i].Title,
+                                            pass: coursedata.result[i].Pass,
+                                            fail: coursedata.result[i].Fail,
+                                            audit: coursedata.result[i].Audit,
+
+                                        }
+                                        pcdarray.push(processedcoursedata);
+
+                                    }
+                                    var final ={
+                                        result:pcdarray
+                                    }
+                                    dict[coursename] = final; //save coursedata to dict[coursename]
                                 }
 
 

@@ -32,57 +32,64 @@ export default class QueryController {
     public query(query: QueryRequest): QueryResponse {
         Log.trace('QueryController::query( ' + JSON.stringify(query) + ' )');
 
-            var response: QueryResponse;
+
             var dict:any = this.datasets["courses"];
             var resultarray:any=[];
 
 
-        Log.trace(JSON.stringify(dict["ENGL112"].result[0].Professor));
-        let queryget = query.GET;
-        Log.trace("GET: " + JSON.stringify(queryget));
+        let querybody:any = query["WHERE"];
+        let keyarray:any = Object.keys(querybody);
+        let filterkey:any = keyarray[0];
+
+        filter(filterkey, keyarray);
+
+        function filter(key:string, querybody:any){
+           if (key == "LT" || key =="GT" || key=="EQ"){
+               mcomparison(key);
+           }
+
+        }
+
+        function mcomparison(filterkey:string){
 
 
-        let where= JSON.parse(JSON.stringify(query.WHERE));
+            if (filterkey=="LT"){
 
+            }
 
-            function GT() {
+            if (filterkey=="GT"){
+                Log.trace("KEY: " + Object.keys(querybody[filterkey])[0]);  //
 
-                if (where.GT.courses_avg) {
-                    for (var key in dict) {
+                var key2:any = Object.keys(querybody[filterkey])[0];  //e.g. courses_avg, courses_fail
+                Log.trace("KEY VALUE:  " + querybody[filterkey][key2]); //e.g. query[where][GT][courses_avg]
 
-                        for (var i = 0, len = dict[key].result.length; i < len; i++) { //for every result in course object
-                            let section = dict[key].result[i];
-                            if (section.Avg > where.GT.courses_avg) {
+                var comparevalue:any = querybody[filterkey][key2];
 
-                                var r:any = {
-                                    courses_avg: section.Avg,
-                                    courses_dept: section.Subject
+                for (var key in dict) {
 
-                                };
-                                resultarray.push(r);
+                    for (var i = 0, len = dict[key].result.length; i < len; i++) { //for every result in course object
+                        let section = dict[key].result[i];
+                        if (section.avg > comparevalue) {   //section.avg should be section.key2, can you use the dictionary you were working on here?
 
-                            }
+                            resultarray.push(section);
+
                         }
                     }
                 }
             }
 
+            if (filterkey=="EQ"){
 
-        if (where.GT) {
+            }
 
-            GT();
+
+
+
         }
 
 
 
-
-       /* let queryorder = query.ORDER;
-        Log.trace("ORDER: " + JSON.stringify(queryorder));
-
-        let queryas = query.AS;
-        Log.trace("AS: " + JSON.stringify(queryas));
-       */
-
+       /// Log.trace(JSON.stringify(resultarray));
 
         var result:any =JSON.parse(JSON.stringify({render: "TABLE",result:resultarray}));
 
