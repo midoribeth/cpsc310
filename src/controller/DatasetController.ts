@@ -30,6 +30,11 @@ export default class DatasetController {
      */
     public getDataset(id: string): any {
         // TODO: this should check if the dataset is on disk in ./data if it is not already in memory.
+        /*var fs = require('fs');
+        var path = './data/' + id + '.json';
+        var stats:any;
+
+        stats = fs.statSync(path);*/
 
         return this.datasets[id];
     }
@@ -37,6 +42,14 @@ export default class DatasetController {
     public getDatasets(): Datasets {
         // TODO: if datasets is empty, load all dataset files in ./data from disk
 
+        if (this.datasets == {}) {
+            var fs = require('fs');
+            var path = '.data/';
+            fs.readFile(path, (err:any, data:any) => {
+                if (err) throw err;
+                this.datasets["courses"] = data;
+            })
+        }
         return this.datasets;
     }
 
@@ -180,11 +193,12 @@ export default class DatasetController {
 
     }
 
-
     public delete(id: string) {
         var fs = require('fs');
         var path = './data/' + id + '.json';
         fs.unlink(path);
+        this.datasets = {};
+
     }
 
 }
