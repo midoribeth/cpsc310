@@ -197,7 +197,7 @@ export default class DatasetController {
         var fs = require('fs');
         var path = './data/' + id + '.json';
         fs.unlink(path);
-        this.datasets = {};
+        this.datasets[id] = null;
 
     }
 

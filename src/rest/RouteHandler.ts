@@ -47,27 +47,41 @@ export default class RouteHandler {
                 req.body = concated.toString('base64');
                 Log.trace('RouteHandler::postDataset(..) on end; total length: ' + req.body.length);
 
+                var fs = require('fs'),
+                    path = './data/'+ id +".json";
+
+                fs.exists(path, (exists:any) => {
+                    if (exists) {
+                        Log.trace("File already exists.");
+                        res.json(201, {status: "File already exists."});
+                    } else {
+                        Log.trace("File added.");
+                        res.json(204, {status: "File added."});
+                    }
+                })
+
                 let controller = RouteHandler.datasetController;
                 controller.process(id, req.body).then(function (result) {
     //check if file with ID already exists in ./data and sends response code
-                   var fs = require('fs'),
-                        path = './data/'+ id+".json",
-                        stats:any;
 
-                    try {
+                        //stats:any;
+
+                    //doesn't output 204 on first input but returns 204 when manually delete and then add
+                    /*try {
                         stats = fs.statSync(path);
                         Log.trace("File already exists.");
                         res.json(201, {status: "File already exists"});
                        //201
                     }
                     catch (e) {
-                        Log.trace("File does not already exist.");
+                        Log.trace("File did not already exist.");
                         res.json(204, {success: result});
                         //204
-                    }
+                    }*/
+
+
 
                  Log.trace('RouteHandler::postDataset(..) - processed');
-                    //res.json(200, {success: result});
                 }).catch(function (err: Error) {
                     Log.trace('RouteHandler::postDataset(..) - ERROR: ' + err.message);
                     res.json(400, {err: err.message});
