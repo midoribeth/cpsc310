@@ -186,7 +186,7 @@ export default class DatasetController {
 
       fs.writeFile("./data/" +id+ '.json', JSON.stringify(processedDataset), function (err:any) {
             if (err) {
-                return Log.trace("Error writing file");
+                Log.trace("Error writing file");
             }
             Log.trace('Saved to /data');
         });

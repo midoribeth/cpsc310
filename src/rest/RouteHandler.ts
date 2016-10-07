@@ -57,15 +57,17 @@ export default class RouteHandler {
                     try {
                         stats = fs.statSync(path);
                         Log.trace("File already exists.");
+                        res.json(201, {status: "File already exists"});
                        //201
                     }
                     catch (e) {
                         Log.trace("File does not already exist.");
+                        res.json(204, {success: result});
                         //204
                     }
 
                  Log.trace('RouteHandler::postDataset(..) - processed');
-                    res.json(200, {success: result});
+                    //res.json(200, {success: result});
                 }).catch(function (err: Error) {
                     Log.trace('RouteHandler::postDataset(..) - ERROR: ' + err.message);
                     res.json(400, {err: err.message});
@@ -108,20 +110,24 @@ export default class RouteHandler {
     public static postQuery(req: restify.Request, res: restify.Response, next: restify.Next) {
         Log.trace('RouteHandler::postQuery(..) - params: ' + JSON.stringify(req.params));
         try {
-            let query: QueryRequest = req.params;
+            let query: any = req.params;
             let datasets: Datasets = RouteHandler.datasetController.getDatasets();
             let controller = new QueryController(datasets);
             let isValid = controller.isValid(query);
 
-            if (isValid === true) {
+            var idfull:any = (query["GET"][0]);
+            var id:any= idfull.substring(0, idfull.indexOf("_"));
+
+            if (datasets[id] == null){
+                res.json(424, {missing: id});
+            }
+            else if (isValid === true) {
                 let result = controller.query(query);
                 res.json(200, result);
-            } else {
-                res.json(400, {status: 'invalid query'});
             }
         } catch (err) {
             Log.error('RouteHandler::postQuery(..) - ERROR: ' + err);
-            res.send(403);
+            res.send(400, {err: err.message});
         }
         return next();
     }
