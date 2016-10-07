@@ -47,6 +47,13 @@ export default class RouteHandler {
                 req.body = concated.toString('base64');
                 Log.trace('RouteHandler::postDataset(..) on end; total length: ' + req.body.length);
 
+                try {
+                    JSON.parse(req.body);
+                } catch (e) {
+                    Log.trace("invalid data within folder");
+                    res.json(400, {error: "invalid zip file"});
+                }
+
                 var fs = require('fs'),
                     path = './data/'+ id +".json";
 
@@ -62,10 +69,7 @@ export default class RouteHandler {
 
                 let controller = RouteHandler.datasetController;
                 controller.process(id, req.body).then(function (result) {
-                    if (req.body[id] == null) {
-                        Log.trace("id does not exist within folder");
-                        res.json(400, {error: "invalid zip file"});
-                    }
+
 
                  Log.trace('RouteHandler::postDataset(..) - processed');
                 }).catch(function (err: Error) {
@@ -121,7 +125,7 @@ export default class RouteHandler {
             if (datasets[id] == null){
                 res.json(424, {missing: id});
             }
-            else if (isValid === true) {
+            if (isValid === true) {
                 let result = controller.query(query);
                 res.json(200, result);
             }
