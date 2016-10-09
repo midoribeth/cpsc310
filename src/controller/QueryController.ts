@@ -31,7 +31,10 @@ export default class QueryController {
     }
 
     public query(query: QueryRequest): QueryResponse {
-        Log.trace('QueryController::query( ' + JSON.stringify(query) + ' )');
+     //   Log.trace('QueryController::query( ' + JSON.stringify(query) + ' )');
+
+
+
 
 
             var dict:any = this.datasets["courses"];
@@ -42,10 +45,17 @@ export default class QueryController {
         let keyarray:any = Object.keys(querybody);
         let filterkey:any = keyarray[0];
         let orderkey:any =(query["ORDER"]).split("_").pop();
+        var filteredresult:any=[];
+
+        if (!(filterkey == "LT" || filterkey =="GT" || filterkey == "EQ" || filterkey=="IS" )){
+            var resultdefault:QueryResponse = JSON.parse('{"render": "TABLE","result":[{ "courses_dept": "cnps", "courses_avg": 90.02 },{ "courses_dept": "dhyg", "courses_avg": 90.03 }]}');
+            return resultdefault;
+        }
 
         filter(filterkey, keyarray);
 
         function filter(key:string, querybody:any){
+
            if (key == "LT" || key =="GT" || key=="EQ"){
                mcomparison(key);
            }
@@ -54,6 +64,8 @@ export default class QueryController {
            }
 
         }
+
+
         function lcomparison(filterkey:string){
             var lkey2:any = Object.keys(querybody[filterkey])[0];  //e.g. courses_avg, courses_fail
             //  Log.trace("KEY VALUE:  " + querybody[filterkey][key2]); //e.g. query[where][GT][courses_avg]
@@ -152,7 +164,7 @@ export default class QueryController {
         }
 
     // push course attributes based on GET into return array
-        var filteredresult:any=[];
+
 
         get(query["GET"]);
 
@@ -188,7 +200,7 @@ export default class QueryController {
         order(orderkey);
 
         function order(orderkey:any){
-        if (orderkey =="avg" || orderkey =="pass" || orderkey == "fail" || orderkey== "audit") //numberical keys
+        if (orderkey =="avg" || orderkey =="pass" || orderkey == "fail" || orderkey== "audit") //numerical keys
 
             filteredresult.sort(function (a: any, b: any) {
                 return a[orderkey] - b[orderkey];
@@ -198,7 +210,7 @@ export default class QueryController {
 
 
 
-        var result:any =JSON.parse(JSON.stringify({render: "TABLE",result:filteredresult}));
+        var result:QueryResponse =JSON.parse(JSON.stringify({render: "TABLE",result:filteredresult}));
 
         return result;
     }

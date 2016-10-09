@@ -31,6 +31,7 @@ export default class RouteHandler {
 
     public static  putDataset(req: restify.Request, res: restify.Response, next: restify.Next) {
         Log.trace('RouteHandler::postDataset(..) - params: ' + JSON.stringify(req.params));
+
         try {
             var id: string = req.params.id;
 
@@ -47,14 +48,14 @@ export default class RouteHandler {
                 req.body = concated.toString('base64');
                 Log.trace('RouteHandler::postDataset(..) on end; total length: ' + req.body.length);
 
-                try {
-                    JSON.parse(req.body);
-                } catch (e) {
-                    Log.trace("invalid data within folder");
-                    res.json(400, {error: "invalid zip file"});
-                }
 
-                var fs = require('fs'),
+
+
+
+
+                //------------------
+
+                    var fs = require('fs'),
                     path = './data/'+ id +".json";
 
                 fs.exists(path, (exists:any) => {
@@ -85,6 +86,37 @@ export default class RouteHandler {
         return next();
     }
 
+
+
+
+    public static postQuery(req: restify.Request, res: restify.Response, next: restify.Next) {
+        Log.trace('RouteHandler::postQuery(..) - params: ' + JSON.stringify(req.params));
+        try {
+            let query: any = req.params;
+            let datasets: Datasets = RouteHandler.datasetController.getDatasets();
+            let controller = new QueryController(datasets);
+            let isValid = controller.isValid(query);
+
+
+
+            var idfull:any = (query["GET"][0]);
+            var id:any= idfull.substring(0, idfull.indexOf("_"));
+
+            if (datasets[id] == null){
+                res.json(424, {missing: id});
+            }
+
+            if (isValid === true) {
+                let result = controller.query(query);
+                res.json(200, result);
+            }
+        } catch (err) {
+            Log.error('RouteHandler::postQuery(..) - ERROR: ' + err);
+            res.send(400, {error: err.message});
+        }
+        return next();
+    }
+
     public static deleteDataset(req: restify.Request, res: restify.Response, next: restify.Next) {
         Log.trace('RouteHandler::deleteDataset(..) - params: ' + JSON.stringify(req.params));
         try {
@@ -105,32 +137,6 @@ export default class RouteHandler {
 
         } catch (err) {
             Log.error('RouteHandler::deleteDataset(..) = ERROR: ' + err.message);
-            res.send(400, {error: err.message});
-        }
-        return next();
-    }
-
-
-    public static postQuery(req: restify.Request, res: restify.Response, next: restify.Next) {
-        Log.trace('RouteHandler::postQuery(..) - params: ' + JSON.stringify(req.params));
-        try {
-            let query: any = req.params;
-            let datasets: Datasets = RouteHandler.datasetController.getDatasets();
-            let controller = new QueryController(datasets);
-            let isValid = controller.isValid(query);
-
-            var idfull:any = (query["GET"][0]);
-            var id:any= idfull.substring(0, idfull.indexOf("_"));
-
-            if (datasets[id] == null){
-                res.json(424, {missing: id});
-            }
-            if (isValid === true) {
-                let result = controller.query(query);
-                res.json(200, result);
-            }
-        } catch (err) {
-            Log.error('RouteHandler::postQuery(..) - ERROR: ' + err);
             res.send(400, {error: err.message});
         }
         return next();

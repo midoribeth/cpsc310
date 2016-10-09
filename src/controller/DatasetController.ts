@@ -41,16 +41,14 @@ export default class DatasetController {
 
     public getDatasets(): Datasets {
         // TODO: if datasets is empty, load all dataset files in ./data from disk
-
-        if (this.datasets == {}) {
-            var fs = require('fs');
-            var path = '.data/';
-            fs.readFile(path, (err:any, data:any) => {
-                if (err) throw err;
-                this.datasets["courses"] = data;
-            })
-        }
+        var fs = require('fs');
+     //   if (this.datasets==null){
+            if (fs.statSync('./data').isDirectory()) {
+                var data: any = fs.readFileSync('./data/courses.json', 'utf8');
+                this.datasets["courses"] = JSON.parse(data); //testing getting info from ./data
+           }
         return this.datasets;
+
     }
 
     /**
@@ -64,6 +62,8 @@ export default class DatasetController {
         Log.trace('DatasetController::process( ' + id + '... )');
 
         let that = this;
+
+
         var dict: { [course: string]: {} } = { }; //dictionary
 
         var promises: any=[];
@@ -172,10 +172,9 @@ export default class DatasetController {
     private save(id: string, processedDataset: any) {
         // add it to the memory model
 
-        this.datasets[id] = processedDataset;
+        //this.datasets[id] = processedDataset;
 
         // TODO: actually write to disk in the ./data directory
-
 
         var fs = require('fs');
         var dir = './data';
@@ -191,13 +190,23 @@ export default class DatasetController {
             Log.trace('Saved to /data');
         });
 
+
+        this.datasets[id]=this.getDatasets();
     }
 
     public delete(id: string) {
         var fs = require('fs');
         var path = './data/' + id + '.json';
-        fs.unlink(path);
-        this.datasets[id] = null;
+
+        if (this.datasets[id]) {
+            delete this.datasets[id];
+            this.datasets[id] = null;
+        }
+
+
+        if (fs.statSync(path).isFile()) {
+         fs.unlink(path);
+        }
 
     }
 
