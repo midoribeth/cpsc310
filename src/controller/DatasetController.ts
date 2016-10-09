@@ -172,7 +172,7 @@ export default class DatasetController {
     private save(id: string, processedDataset: any) {
         // add it to the memory model
 
-        //this.datasets[id] = processedDataset;
+        this.datasets[id] = processedDataset;
 
         // TODO: actually write to disk in the ./data directory
 
@@ -191,7 +191,7 @@ export default class DatasetController {
         });
 
 
-        this.datasets[id]=this.getDatasets();
+        //this.datasets[id]=this.getDatasets();
     }
 
     public delete(id: string) {
