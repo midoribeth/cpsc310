@@ -77,18 +77,24 @@ export default class RouteHandler {
         Log.trace('RouteHandler::postQuery(..) - params: ' + JSON.stringify(req.params));
         try {
             let query: any = req.params;
+
+            try {
+                RouteHandler.datasetController.getDatasets();
+            } catch (err) {
+                res.json(424, {missing: "courses"});
+            }
+
             let datasets: Datasets = RouteHandler.datasetController.getDatasets();
-            let controller = new QueryController(datasets);
-            let isValid = controller.isValid(query);
-
-
 
             var idfull:any = (query["GET"][0]);
             var id:any= idfull.substring(0, idfull.indexOf("_"));
 
-            if (datasets[id] == null){
+            if (datasets[id] == null) {
                 res.json(424, {missing: id});
             }
+
+            let controller = new QueryController(datasets);
+            let isValid = controller.isValid(query);
 
             if (isValid === true) {
                 let result = controller.query(query);
