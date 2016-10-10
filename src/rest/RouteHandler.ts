@@ -48,24 +48,14 @@ export default class RouteHandler {
                 req.body = concated.toString('base64');
                 Log.trace('RouteHandler::postDataset(..) on end; total length: ' + req.body.length);
 
-
-                    var fs = require('fs'),
-                    path = './data/'+ id +".json";
-
-                fs.exists(path, (exists:any) => {
-                    if (exists) {
-                        Log.trace("File already exists.");
-                        res.json(201, {status: "File already exists."});
-                    } else {
-                        Log.trace("File added.");
-                        res.json(204, {status: "File added."});
-                    }
-                })
-
                 let controller = RouteHandler.datasetController;
+                let idExists:boolean = controller.inMemory(id);
                 controller.process(id, req.body).then(function (result) {
-
-
+                    if (!idExists) {
+                        res.json(204);
+                    } else {
+                        res.json(201);
+                    }
                  Log.trace('RouteHandler::postDataset(..) - processed');
                 }).catch(function (err: Error) {
                     Log.trace('RouteHandler::postDataset(..) - ERROR: ' + err.message);
