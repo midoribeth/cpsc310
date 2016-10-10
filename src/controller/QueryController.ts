@@ -35,8 +35,6 @@ export default class QueryController {
 
 
 
-
-
             var dict:any = this.datasets["courses"];
             var resultarray:any=[];
 
@@ -186,13 +184,11 @@ export default class QueryController {
                                 finalcourseinfo["courses_"+columnneeded] = resultarray[course][rkarray[rkey]]; // put that key's value into new obj
 
                             }
-
-
                         }
 
-                        filteredresult.push(finalcourseinfo); //push object with filtered columns
-                    }
 
+                    }
+                    filteredresult.push(finalcourseinfo); //push object with filtered columns
                 }
             }
 
@@ -203,7 +199,7 @@ export default class QueryController {
         if (orderkey =="avg" || orderkey =="pass" || orderkey == "fail" || orderkey== "audit") //numerical keys
 
             filteredresult.sort(function (a: any, b: any) {
-                return a[orderkey] - b[orderkey];
+                return a["courses_"+orderkey] - b["courses_"+orderkey];
             });
 
         }

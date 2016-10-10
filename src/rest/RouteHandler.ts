@@ -49,12 +49,6 @@ export default class RouteHandler {
                 Log.trace('RouteHandler::postDataset(..) on end; total length: ' + req.body.length);
 
 
-
-
-
-
-                //------------------
-
                     var fs = require('fs'),
                     path = './data/'+ id +".json";
 
