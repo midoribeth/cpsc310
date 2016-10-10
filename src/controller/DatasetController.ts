@@ -210,4 +210,11 @@ export default class DatasetController {
 
     }
 
+    public inMemory(id: string): boolean {
+        var fs = require('fs'),
+            path = './data/'+ id +".json";
+
+        return fs.existsSync(path);
+    }
+
 }
