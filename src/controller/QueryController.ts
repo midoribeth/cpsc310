@@ -42,10 +42,10 @@ export default class QueryController {
         let querybody:any = query["WHERE"];
         let keyarray:any = Object.keys(querybody);
         let filterkey:any = keyarray[0];
-        let orderkey:any =(query["ORDER"]).split("_").pop();
+
         var filteredresult:any=[];
 
-        if (!(filterkey == "LT" || filterkey =="GT" || filterkey == "EQ" || filterkey=="IS" )){
+        if (!(filterkey == "LT" || filterkey =="GT" || filterkey == "EQ" || filterkey=="IS")){
             var resultdefault:QueryResponse = JSON.parse('{"render": "TABLE","result":[{ "courses_dept": "cnps", "courses_avg": 90.02 },{ "courses_dept": "dhyg", "courses_avg": 90.03 }]}');
             return resultdefault;
         }
@@ -61,7 +61,19 @@ export default class QueryController {
                lcomparison(key);
            }
 
+
         }
+/*
+        function logiccomparison(filterkey:string){
+
+
+            var lckey1:any = (Object.keys(querybody[filterkey][0]))[0];
+            var lckey2:any = (Object.keys(querybody[filterkey][1]))[0];
+            Log.trace("logic: " + lckey1 + "   " +lckey2);
+
+        }
+
+*/
 
 
         function lcomparison(filterkey:string){
@@ -192,8 +204,11 @@ export default class QueryController {
                 }
             }
 
+        if (!(typeof query["ORDER"] == 'undefined')) {
+            let orderkey: any = (query["ORDER"]).split("_").pop();
+            order(orderkey);
+        }
 
-        order(orderkey);
 
         function order(orderkey:any){
         if (orderkey =="avg" || orderkey =="pass" || orderkey == "fail" || orderkey== "audit") //numerical keys
