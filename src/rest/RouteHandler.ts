@@ -48,24 +48,6 @@ export default class RouteHandler {
                 req.body = concated.toString('base64');
                 Log.trace('RouteHandler::postDataset(..) on end; total length: ' + req.body.length);
 
-/*                try {
-
-                    var zip = new JSZip();
-                    zip.loadAsync(req.body, {base64: true}).then(function(zip: JSZip) {
-                        zip.forEach(function(relativePath: string, file: JSZipObject) {
-                            if (!file.dir) {
-                                file.async("string").then(function(data) {
-                                    JSON.parse(data);
-                                })
-                            }
-                        })
-                    }).catch(function(err) {
-                        res.json(400);
-                    })
-
-                } catch (err) {
-                    res.json(404);
-                }*/
 
 
 
@@ -79,10 +61,10 @@ export default class RouteHandler {
                 fs.exists(path, (exists:any) => {
                     if (exists) {
                         Log.trace("File already exists.");
-                        res.json(201);
+                        res.json(201, {status: "File already exists."});
                     } else {
                         Log.trace("File added.");
-                        res.json(204);
+                        res.json(204, {status: "File added."});
                     }
                 })
 
@@ -124,7 +106,7 @@ export default class RouteHandler {
                 res.json(424, {missing: id});
             }
 
-            else if (isValid === true) {
+            if (isValid === true) {
                 let result = controller.query(query);
                 res.json(200, result);
             }
@@ -147,10 +129,10 @@ export default class RouteHandler {
             try {
                 stats = fs.statSync(path);
                 controller.delete(id);
-                res.json(204);
+                res.json(204, {status: 'Dataset deleted'});
             }
             catch (e) {
-                res.json(404);
+                res.json(404, {status: 'Dataset does not exist'});
             }
 
         } catch (err) {

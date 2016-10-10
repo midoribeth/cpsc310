@@ -31,7 +31,7 @@ export default class QueryController {
     }
 
     public query(query: QueryRequest): QueryResponse {
-        Log.trace('QueryController::query( ' + JSON.stringify(query) + ' )');
+     //   Log.trace('QueryController::query( ' + JSON.stringify(query) + ' )');
 
 
 
@@ -44,13 +44,13 @@ export default class QueryController {
         let querybody:any = query["WHERE"];
         let keyarray:any = Object.keys(querybody);
         let filterkey:any = keyarray[0];
-/*        let orderkey:any =(query["ORDER"]).split("_").pop();
+        let orderkey:any =(query["ORDER"]).split("_").pop();
         var filteredresult:any=[];
 
         if (!(filterkey == "LT" || filterkey =="GT" || filterkey == "EQ" || filterkey=="IS" )){
             var resultdefault:QueryResponse = JSON.parse('{"render": "TABLE","result":[{ "courses_dept": "cnps", "courses_avg": 90.02 },{ "courses_dept": "dhyg", "courses_avg": 90.03 }]}');
             return resultdefault;
-        }*/
+        }
 
         filter(filterkey, keyarray);
 
@@ -59,14 +59,14 @@ export default class QueryController {
            if (key == "LT" || key =="GT" || key=="EQ"){
                mcomparison(key);
            }
-/*           if (key == "IS"){
+           if (key == "IS"){
                lcomparison(key);
-           }*/
+           }
 
         }
 
 
-/*        function lcomparison(filterkey:string){
+        function lcomparison(filterkey:string){
             var lkey2:any = Object.keys(querybody[filterkey])[0];  //e.g. courses_avg, courses_fail
             //  Log.trace("KEY VALUE:  " + querybody[filterkey][key2]); //e.g. query[where][GT][courses_avg]
 
@@ -87,7 +87,7 @@ export default class QueryController {
 
 
 
-        }*/
+        }
 
         function mcomparison(filterkey:string){
 
@@ -95,7 +95,7 @@ export default class QueryController {
             if (filterkey=="LT"){
                 // Log.trace("KEY: " + Object.keys(querybody[filterkey])[0]);  //
 
-/*                var key2:any = Object.keys(querybody[filterkey])[0];  //e.g. courses_avg, courses_fail
+                var key2:any = Object.keys(querybody[filterkey])[0];  //e.g. courses_avg, courses_fail
                 //  Log.trace("KEY VALUE:  " + querybody[filterkey][key2]); //e.g. query[where][GT][courses_avg]
 
                 var comparevalue:any = querybody[filterkey][key2];
@@ -110,7 +110,7 @@ export default class QueryController {
 
                         }
                     }
-                }*/
+                }
 
             }
 
@@ -121,13 +121,12 @@ export default class QueryController {
               //  Log.trace("KEY VALUE:  " + querybody[filterkey][key2]); //e.g. query[where][GT][courses_avg]
 
                 var comparevalue:any = querybody[filterkey][key2];
-                //var compareto:any = key2.split("_").pop();
+                var compareto:any = key2.split("_").pop();
                 for (var key in dict) {
 
                     for (var i = 0, len = dict[key].result.length; i < len; i++) { //for every result in course object
                         let section = dict[key].result[i];
-                        //if (section[compareto]> comparevalue) {   //section.avg should be section.key2, can you use the dictionary you were working on here?
-                        if (section.avg > comparevalue) {
+                        if (section[compareto]> comparevalue) {   //section.avg should be section.key2, can you use the dictionary you were working on here?
 
                             resultarray.push(section);
 
@@ -138,7 +137,7 @@ export default class QueryController {
 
             if (filterkey=="EQ"){
 
-/*            //    Log.trace("KEY: " + Object.keys(querybody[filterkey])[0]);  //
+            //    Log.trace("KEY: " + Object.keys(querybody[filterkey])[0]);  //
 
                 var key2:any = Object.keys(querybody[filterkey])[0];  //e.g. courses_avg, courses_fail
             //    Log.trace("KEY VALUE:  " + querybody[filterkey][key2]); //e.g. query[where][GT][courses_avg]
@@ -155,7 +154,7 @@ export default class QueryController {
 
                         }
                     }
-                }*/
+                }
 
             }
 
@@ -167,7 +166,7 @@ export default class QueryController {
     // push course attributes based on GET into return array
 
 
-/*        get(query["GET"]);
+        get(query["GET"]);
 
         function get(getkeyarray:any) {
 
@@ -207,16 +206,12 @@ export default class QueryController {
                 return a[orderkey] - b[orderkey];
             });
 
-        }*/
+        }
 
-        var result:any =JSON.parse(JSON.stringify({render: "TABLE",result:resultarray}));
+
+
+        var result:QueryResponse =JSON.parse(JSON.stringify({render: "TABLE",result:filteredresult}));
 
         return result;
-
-        //var result:QueryResponse =JSON.parse(JSON.stringify({render: "TABLE",result:filteredresult}));
-
-        //return result;
-
-        //return {status: 'received', ts: new Date().getTime()};
     }
 }
