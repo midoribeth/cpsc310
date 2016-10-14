@@ -100,6 +100,10 @@ export default class RouteHandler {
                 let result = controller.query(query);
                 res.json(200, result);
             }
+            else if (isValid === false) {
+                res.json(400, {error: 'Query failed.'});
+            }
+
         } catch (err) {
             Log.error('RouteHandler::postQuery(..) - ERROR: ' + err);
             res.send(400, {error: err.message});

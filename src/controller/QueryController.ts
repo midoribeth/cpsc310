@@ -23,8 +23,9 @@ export default class QueryController {
     }
 
     public isValid(query: QueryRequest): boolean {
-        if (typeof query !== 'undefined' && query !== null && Object.keys(query).length > 0) {
+        if (typeof query["AS"] !== 'undefined' && typeof query !== 'undefined' && query !== null && Object.keys(query).length > 0) {
 
+            if (query["GET"].indexOf(query["ORDER"]) > -1)
             return true;
         }
         return false;
@@ -60,7 +61,6 @@ export default class QueryController {
            if (key == "IS"){
                lcomparison(key);
            }
-
 
         }
 /*
