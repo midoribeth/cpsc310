@@ -25,8 +25,11 @@ export default class QueryController {
     public isValid(query: QueryRequest): boolean {
         if (typeof query["AS"] !== 'undefined' && typeof query !== 'undefined' && query !== null && Object.keys(query).length > 0) {
 
-            if (query["GET"] && query["ORDER"])
-            return true;
+            if (typeof query["ORDER"] !== 'undefined') {
+                if (query["GET"].indexOf(query["ORDER"]) > -1) {
+                    return true;
+                } else return false;
+            } else return true;
         }
         return false;
     }
