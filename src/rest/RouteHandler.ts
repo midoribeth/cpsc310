@@ -88,19 +88,18 @@ export default class RouteHandler {
 
             var idfull:any = (query["GET"][0]);
             var id:any= idfull.substring(0, idfull.indexOf("_"));
+            let controller = new QueryController(datasets);
+            let isValid = controller.isValid(query);
 
             if (datasets[id] == null) {
                 res.json(424, {missing: id});
             }
 
-            let controller = new QueryController(datasets);
-            let isValid = controller.isValid(query);
-
-            if (isValid === true) {
+            else if (isValid === true) {
                 let result = controller.query(query);
                 res.json(200, result);
             }
-            else if (isValid === false) {
+            else {
                 res.json(400, {error: 'Query failed.'});
             }
 
