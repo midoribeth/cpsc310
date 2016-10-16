@@ -40,7 +40,7 @@ export default class QueryController {
 
 
             var dict:any = this.datasets["courses"];
-            var resultarray:any=[];
+            var mresultarray:any=[];
 
 
         let querybody:any = query["WHERE"];
@@ -49,42 +49,113 @@ export default class QueryController {
 
         var filteredresult:any=[];
 
-        if (!(filterkey == "LT" || filterkey =="GT" || filterkey == "EQ" || filterkey=="IS")){
+        if (!(filterkey == "LT" || filterkey =="GT" || filterkey == "EQ" || filterkey=="IS" || filterkey=="AND")){
             var resultdefault:QueryResponse = JSON.parse('{"render": "TABLE","result":[{ "courses_dept": "cnps", "courses_avg": 90.02 },{ "courses_dept": "dhyg", "courses_avg": 90.03 }]}');
             return resultdefault;
         }
 
-        filter(filterkey, keyarray);
+        filter(filterkey);
 
-        function filter(key:string, querybody:any){
+        function filter(key:string):any{
 
            if (key == "LT" || key =="GT" || key=="EQ"){
-               mcomparison(key);
+               result= mcomparison(key);
+               mresultarray=result;
+               return result;
+
            }
            if (key == "IS"){
-               lcomparison(key);
+              result=lcomparison(key);
+               mresultarray=result;
+               return result;
            }
 
-        }
-/*
-        function logiccomparison(filterkey:string){
-
-
-            var lckey1:any = (Object.keys(querybody[filterkey][0]))[0];
-            var lckey2:any = (Object.keys(querybody[filterkey][1]))[0];
-            Log.trace("logic: " + lckey1 + "   " +lckey2);
-
+        if (key =="AND"){
+           result=logiccomparison(key);
+            mresultarray=result;
+            return result;
         }
 
-*/
+
+
+        }
+
+        var comparekey1:any; // e.g. courses_dept, courses_avg
+        var comparevalue1:any; //e.g. cpsc, 50, financial accounting
+        var comparekey2:any; // e.g. courses_dept, courses_avg
+        var comparevalue2:any; //e.g. cpsc, 50, financial accounting
+
+     function logiccomparison(filterkey:string){
+
+
+             var lckey1:any = Object.keys(querybody[filterkey][0])[0]; //e.g. query[where][and][0][first key]
+            comparekey1= Object.keys(querybody[filterkey][0][lckey1])[0]; //e.g. courses_dept, courses_avg, id
+            comparevalue1= querybody[filterkey][0][lckey1][comparekey1]; //e.g. cpsc, 50, 310
+
+        var resultarray1:any = filter(lckey1);
+
+         var lckey2 = Object.keys(querybody[filterkey][1])[0]; //e.g. query[where][and][0][first key]
+         comparekey2= Object.keys(querybody[filterkey][1][lckey2])[0]; //e.g. courses_dept, courses_avg, id
+         comparevalue2 = querybody[filterkey][1][lckey2][comparekey2]; //e.g. cpsc, 50, 310
+
+        var resultarray2:any = filter(lckey2);
+
+         Log.trace(lckey1 + comparekey1 + comparevalue1 + lckey2+ comparekey2+ comparevalue2);
+
+         var result:any = [];
+
+         var c = resultarray1.concat(resultarray2);
+
+//   combining the two result arrays
+
+         var k1:any=comparekey1.split("_").pop();
+             var k2:any=comparekey2.split("_").pop();
+
+
+         for (var i = 0; i < c.length; i++){
+             if (c[i][k1] == comparevalue1 && c[i][k2] == comparevalue2)
+             {
+
+                 result.push(c[i]);
+             }
+         }
+
+         var half_length = Math.ceil(result.length / 2);
+         var leftSide:any = result.splice(0,half_length);
+
+         return leftSide;
+
+
+        }
+
+
 
 
         function lcomparison(filterkey:string){
-            var lkey2:any = Object.keys(querybody[filterkey])[0];  //e.g. courses_avg, courses_fail
+
             //  Log.trace("KEY VALUE:  " + querybody[filterkey][key2]); //e.g. query[where][GT][courses_avg]
 
-            var comparevalue:any = querybody[filterkey][lkey2];
-            var compareto:any = lkey2.split("_").pop();
+            var comparevalue:any;
+            var compareto:any;
+            var resultarray:any=[];
+
+            if (typeof comparekey2 !== 'undefined' && typeof comparevalue2 !== 'undefined'){
+                compareto=comparekey2.split("_").pop();
+                comparevalue=comparevalue2;
+            }
+
+
+           else if (typeof comparekey1 !== 'undefined' && typeof comparevalue1 !== 'undefined'){
+                compareto=comparekey1.split("_").pop();
+                comparevalue=comparevalue1;
+            }
+
+
+            else { //base case
+                var lkey2:any = Object.keys(querybody[filterkey])[0];  //e.g. courses_avg, courses_fail
+                compareto=lkey2.split("_").pop();
+                comparevalue = querybody[filterkey][lkey2];
+            }
             for (var key in dict) {
 
                 for (var i = 0, len = dict[key].result.length; i < len; i++) { //for every result in course object
@@ -97,22 +168,36 @@ export default class QueryController {
                 }
             }
 
-
-
+       return resultarray;
 
         }
 
         function mcomparison(filterkey:string){
+            var comparevalue:any;
+            var compareto:any;
+            var resultarray:any=[];
+
+            if (typeof comparekey2 !== 'undefined' && typeof comparevalue2 !== 'undefined'){
+                compareto=comparekey2.split("_").pop();
+                comparevalue=comparevalue2;
+            }
+
+
+            else if (typeof comparekey1 !== 'undefined' && typeof comparevalue1 !== 'undefined'){
+                compareto=comparekey1.split("_").pop();
+                comparevalue=comparevalue1;
+            }
+
+
+            else { //base case, if LT/GT/EQ is the first key in WHERE
+                var key2:any = Object.keys(querybody[filterkey])[0];  //e.g. courses_avg, courses_fail
+                compareto=key2.split("_").pop();
+                comparevalue = querybody[filterkey][key2];
+            }
 
 
             if (filterkey=="LT"){
-                // Log.trace("KEY: " + Object.keys(querybody[filterkey])[0]);  //
 
-                var key2:any = Object.keys(querybody[filterkey])[0];  //e.g. courses_avg, courses_fail
-                //  Log.trace("KEY VALUE:  " + querybody[filterkey][key2]); //e.g. query[where][GT][courses_avg]
-
-                var comparevalue:any = querybody[filterkey][key2];
-                var compareto:any = key2.split("_").pop();
                 for (var key in dict) {
 
                     for (var i = 0, len = dict[key].result.length; i < len; i++) { //for every result in course object
@@ -124,17 +209,11 @@ export default class QueryController {
                         }
                     }
                 }
+                return resultarray;
 
             }
 
             if (filterkey=="GT"){
-               // Log.trace("KEY: " + Object.keys(querybody[filterkey])[0]);  //
-
-                var key2:any = Object.keys(querybody[filterkey])[0];  //e.g. courses_avg, courses_fail
-              //  Log.trace("KEY VALUE:  " + querybody[filterkey][key2]); //e.g. query[where][GT][courses_avg]
-
-                var comparevalue:any = querybody[filterkey][key2];
-                var compareto:any = key2.split("_").pop();
                 for (var key in dict) {
 
                     for (var i = 0, len = dict[key].result.length; i < len; i++) { //for every result in course object
@@ -146,17 +225,11 @@ export default class QueryController {
                         }
                     }
                 }
+                return resultarray;
+
             }
 
             if (filterkey=="EQ"){
-
-            //    Log.trace("KEY: " + Object.keys(querybody[filterkey])[0]);  //
-
-                var key2:any = Object.keys(querybody[filterkey])[0];  //e.g. courses_avg, courses_fail
-            //    Log.trace("KEY VALUE:  " + querybody[filterkey][key2]); //e.g. query[where][GT][courses_avg]
-
-                var comparevalue:any = querybody[filterkey][key2];
-                var compareto:any = key2.split("_").pop();
                 for (var key in dict) {
 
                     for (var i = 0, len = dict[key].result.length; i < len; i++) { //for every result in course object
@@ -171,7 +244,7 @@ export default class QueryController {
 
             }
 
-
+return resultarray;
 
 
         }
@@ -183,12 +256,12 @@ export default class QueryController {
 
         function get(getkeyarray:any) {
 
-                for (var course in resultarray) { //for every course in the array after querybody
+                for (var course in mresultarray) { //for every course in the array after querybody
                     var finalcourseinfo: any = new Object;
 
                     for (var g in getkeyarray) { //for every column value that you have to get
                         var columnneeded: any = getkeyarray[g].split("_").pop(); //column you need
-                        var rkarray: any = Object.keys(resultarray[course]); //all they keys in a course
+                        var rkarray: any = Object.keys(mresultarray[course]); //all they keys in a course
 
                         for (var rkey in rkarray) {  //for every key, e.g. dept, avg
 
@@ -196,7 +269,7 @@ export default class QueryController {
                                 //Log.trace(rkarray[rkey]); // prints all keys for each course
                                 //  Log.trace(resultarray[course][rkarray[rkey]]); // prints key value for dept
 
-                                finalcourseinfo["courses_"+columnneeded] = resultarray[course][rkarray[rkey]]; // put that key's value into new obj
+                                finalcourseinfo["courses_"+columnneeded] = mresultarray[course][rkarray[rkey]]; // put that key's value into new obj
 
                             }
                         }
@@ -220,17 +293,18 @@ export default class QueryController {
                 return a["courses_"+orderkey] - b["courses_"+orderkey];
             });
 
-            if (orderkey =="dept" || orderkey =="id" || orderkey == "instructor" || orderkey== "title") {
+          if (orderkey =="dept" || orderkey =="id" || orderkey == "instructor" || orderkey== "title") {
                filteredresult.sort(function(a: any, b: any){
-                    var stringA=a["courses_"+orderkey].toLowerCase(), stringB=b["courses_"+orderkey].toLowerCase()
+                    var stringA=a["courses_"+orderkey].toLowerCase(), stringB=b["courses_"+orderkey].toLowerCase();
 
-                    if (stringA < stringB) //sort string ascending
+                    if (stringA < stringB) {//sort string ascending
                         return -1;
-
-                    if (stringA > stringB)
+                    } else if (stringA == stringB){
+                        return 0;
+                    } else {
                         return 1;
+                    }
 
-                    return 0; //default return value (no sorting)
                 })
 
             }
