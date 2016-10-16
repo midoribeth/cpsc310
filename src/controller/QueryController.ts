@@ -220,6 +220,23 @@ export default class QueryController {
                 return a["courses_"+orderkey] - b["courses_"+orderkey];
             });
 
+            if (orderkey =="dept" || orderkey =="id" || orderkey == "instructor" || orderkey== "title") {
+               filteredresult.sort(function(a: any, b: any){
+                    var stringA=a["courses_"+orderkey].toLowerCase(), stringB=b["courses_"+orderkey].toLowerCase()
+
+                    if (stringA < stringB) //sort string ascending
+                        return -1;
+
+                    if (stringA > stringB)
+                        return 1;
+
+                    return 0; //default return value (no sorting)
+                })
+
+            }
+
+
+
         }
 
 
