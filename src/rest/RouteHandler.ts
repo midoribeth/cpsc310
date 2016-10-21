@@ -7,6 +7,8 @@ import fs = require('fs');
 import DatasetController from '../controller/DatasetController';
 import {Datasets} from '../controller/DatasetController';
 import QueryController from '../controller/QueryController';
+import InsightFacade from '../controller/InsightFacade';
+import {InsightResponse} from "../controller/IInsightFacade";
 
 import {QueryRequest} from "../controller/QueryController";
 import Log from '../Util';
@@ -14,6 +16,8 @@ import Log from '../Util';
 export default class RouteHandler {
 
     private static datasetController = new DatasetController();
+
+    private static insightFacade = new InsightFacade();
 
     public static getHomepage(req: restify.Request, res: restify.Response, next: restify.Next) {
         Log.trace('RoutHandler::getHomepage(..)');
@@ -48,7 +52,15 @@ export default class RouteHandler {
                 req.body = concated.toString('base64');
                 Log.trace('RouteHandler::postDataset(..) on end; total length: ' + req.body.length);
 
-                let controller = RouteHandler.datasetController;
+                //var insightResponse: InsightResponse;
+                RouteHandler.insightFacade.addDataset(id, req.body).then(function(response: InsightResponse) {
+                    res.json(response.code);
+                }).catch(function (err: Error) {
+                    res.json(400);
+                });
+                //res.json(insightResponse.code);
+
+                /*let controller = RouteHandler.datasetController;
                 let idExists:boolean = controller.inMemory(id);
                 controller.process(id, req.body).then(function (result) {
                     if (!idExists) {
@@ -60,7 +72,7 @@ export default class RouteHandler {
                 }).catch(function (err: Error) {
                     Log.trace('RouteHandler::postDataset(..) - ERROR: ' + err.message);
                     res.json(400, {error: err.message});
-                });
+                });*/
             });
 
         } catch (err) {
@@ -78,7 +90,13 @@ export default class RouteHandler {
         try {
             let query: any = req.params;
 
-            try {
+            RouteHandler.insightFacade.performQuery(query).then(function(response: InsightResponse) {
+                res.json(response.code, response.body);
+            }).catch(function (err: Error) {
+                res.json(400, {error: err.message});
+            });
+
+            /*try {
                 RouteHandler.datasetController.getDatasets();
             } catch (err) {
                 res.json(424, {missing: "courses"});
@@ -89,7 +107,7 @@ export default class RouteHandler {
             var idfull:any = (query["GET"][0]);
             var id:any= idfull.substring(0, idfull.indexOf("_"));
             let controller = new QueryController(datasets);
-            let isValid = controller.isValid(query);
+
 
             if (datasets[id] == null) {
                 res.json(424, {missing: id});
@@ -101,7 +119,7 @@ export default class RouteHandler {
             }
             else {
                 res.json(400, {error: 'Query failed.'});
-            }
+            }*/
 
         } catch (err) {
             Log.error('RouteHandler::postQuery(..) - ERROR: ' + err);
@@ -114,7 +132,14 @@ export default class RouteHandler {
         Log.trace('RouteHandler::deleteDataset(..) - params: ' + JSON.stringify(req.params));
         try {
             var id: string = req.params.id;
-            let controller = RouteHandler.datasetController;
+
+            RouteHandler.insightFacade.removeDataset(id).then(function(response: InsightResponse) {
+                res.json(response.code);
+            }).catch(function (err: Error) {
+                res.json(400);
+            })
+
+            /*let controller = RouteHandler.datasetController;
             var fs = require('fs'),
                 path = './data/'+ id+".json",
                 stats: any;
@@ -126,7 +151,7 @@ export default class RouteHandler {
             }
             catch (e) {
                 res.json(404, {status: 'Dataset does not exist'});
-            }
+            }*/
 
         } catch (err) {
             Log.error('RouteHandler::deleteDataset(..) = ERROR: ' + err.message);
