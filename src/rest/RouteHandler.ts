@@ -52,13 +52,11 @@ export default class RouteHandler {
                 req.body = concated.toString('base64');
                 Log.trace('RouteHandler::postDataset(..) on end; total length: ' + req.body.length);
 
-                //var insightResponse: InsightResponse;
                 RouteHandler.insightFacade.addDataset(id, req.body).then(function(response: InsightResponse) {
                     res.json(response.code);
-                }).catch(function (err: Error) {
-                    res.json(400);
+                }).catch(function (response: InsightResponse) {
+                    res.json(response.code);
                 });
-                //res.json(insightResponse.code);
 
                 /*let controller = RouteHandler.datasetController;
                 let idExists:boolean = controller.inMemory(id);
@@ -92,8 +90,8 @@ export default class RouteHandler {
 
             RouteHandler.insightFacade.performQuery(query).then(function(response: InsightResponse) {
                 res.json(response.code, response.body);
-            }).catch(function (err: Error) {
-                res.json(400, {error: err.message});
+            }).catch(function (response: InsightResponse) {
+                res.json(response.code, response.body);
             });
 
             /*try {
@@ -135,8 +133,8 @@ export default class RouteHandler {
 
             RouteHandler.insightFacade.removeDataset(id).then(function(response: InsightResponse) {
                 res.json(response.code);
-            }).catch(function (err: Error) {
-                res.json(400);
+            }).catch(function (response: InsightResponse) {
+                res.json(response.code);
             })
 
             /*let controller = RouteHandler.datasetController;
