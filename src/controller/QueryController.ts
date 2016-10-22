@@ -44,7 +44,7 @@ Log.trace(JSON.stringify(query["GROUP"]));
         if (typeof query["GROUP"] !== 'undefined'){
             var qgroup:any= query["GROUP"];
             for (var qk in qgroup){
-                if (qgroup[qk] !== "courses_dept" && qgroup[qk] !== "courses_id" && qgroup[qk] !== "courses_avg" && qgroup[qk] !== "courses_instructor" && qgroup[qk] !== "courses_title" && qgroup[qk] !== "courses_fail" && qgroup[qk] !== "courses_fail" && qgroup[qk] !== "courses_audit" )
+                if (qgroup[qk] !== "courses_dept" && qgroup[qk] !== "courses_id" && qgroup[qk] !== "courses_avg" && qgroup[qk] !== "courses_instructor" && qgroup[qk] !== "courses_title" && qgroup[qk] !== "courses_pass" && qgroup[qk] !== "courses_fail" && qgroup[qk] !== "courses_audit" && qgroup[qk] !== "courses_uuid")
                     return false; //group contains valid keys
             }
         }
