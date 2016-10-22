@@ -47,7 +47,7 @@ export default class InsightFacade implements IInsightFacade {
                     fulfill({code: 204, body: 'Dataset deleted.'});
                 }
                 catch (e) {
-                    reject({code: 400, error: 'Dataset does not exists.'});
+                    reject({code: 404, error: 'Dataset does not exists.'});
                 }
             }
             catch (err) {
