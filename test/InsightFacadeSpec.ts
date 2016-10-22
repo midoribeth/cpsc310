@@ -8,7 +8,7 @@ import InsightFacade from "../src/controller/InsightFacade";
 import {InsightResponse} from "../src/controller/IInsightFacade";
 
 describe("InsightFacade", function () {
-
+this.timeout(30000);
     var zipFileContents: string = null;
     var facade: InsightFacade = null;
     before(function () {

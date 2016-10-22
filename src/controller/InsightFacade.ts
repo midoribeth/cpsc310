@@ -81,7 +81,7 @@ export default class InsightFacade implements IInsightFacade {
             else if (isValid) {
                 Log.trace('in promise');
                 let result = controller.query(query);
-                fulfill({code: 200, body: {result}});
+                fulfill({code: 200, body: result});
             }
 
             else {

@@ -37,7 +37,15 @@ describe("QueryController", function () {
 
     it("Should be able to query, although the answer will be empty", function () {
         // NOTE: this is not actually a valid query for D1, nor is the result correct.
-        let query: QueryRequest = {GET: 'food', WHERE: {IS: 'apple'}, ORDER: 'food', AS: 'table'};
+        let query: QueryRequest = {
+                "GET": ["courses_id", "courseAverage"],
+                "WHERE": {"IS": {"courses_dept": "adhe"}} ,
+                "GROUP": [ "courses_id" ],
+                "APPLY": [ {"courseAverage": {"AVG": "courses_avg"}} ],
+                "ORDER": { "dir": "UP", "keys": ["courseAverage", "courses_id"]},
+                "AS":"TABLE"
+            }
+            ;
         let dataset: Datasets = {};
         let controller = new QueryController(dataset);
         let ret = controller.query(query);

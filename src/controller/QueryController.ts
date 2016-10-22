@@ -54,8 +54,26 @@ export default class QueryController {
 
 
         var filteredresult: any = [];
+        if (JSON.stringify(querybody)=="{}"){
+            mresultarray = returnall();
 
-        if (!(filterkey == "LT" || filterkey == "GT" || filterkey == "EQ" || filterkey == "IS" || filterkey == "AND")) {
+        }
+
+        function returnall():any{
+            var resultarray:any=[];
+
+            for (var key in dict) {
+
+                for (var i = 0, len = dict[key].result.length; i < len; i++) { //for every result in course object
+                    let section = dict[key].result[i];
+                        resultarray.push(section);
+                    }
+                }
+
+            return resultarray;
+        }
+
+        if (!(JSON.stringify(querybody)=="{}" || filterkey == "LT" || filterkey == "GT" || filterkey == "EQ" || filterkey == "IS" || filterkey == "AND")) {
             var resultdefault: QueryResponse = JSON.parse('{"render": "TABLE","result":[{ "courses_dept": "cnps", "courses_avg": 90.02 },{ "courses_dept": "dhyg", "courses_avg": 90.03 }]}');
             return resultdefault;
         }
@@ -323,7 +341,7 @@ export default class QueryController {
                         }
 
                         group[0][fieldname] = (max); // add result of computation to first entry in group
-                        mresultarray.push(group[0]); // add first result of each group to final array
+                       // mresultarray.push(group[0]); // add first result of each group to final array
                     });
                 }
 
@@ -337,7 +355,7 @@ export default class QueryController {
                         }
 
                         group[0][fieldname] = (min); // add result of computation to first entry in group
-                        mresultarray.push(group[0]); // add first result of each group to final array
+                       // mresultarray.push(group[0]); // add first result of each group to final array
                     });
                 }
 
@@ -352,30 +370,36 @@ export default class QueryController {
                         var avg: any = Number((total / group.length).toFixed(2));
 
                         group[0][fieldname] = avg; // add result of computation to first entry in group
-                        mresultarray.push(group[0]); // add first result of each group to final array
+                     //   mresultarray.push(group[0]); // add first result of each group to final array
                     });
                 }
 
                 if (applykey == "COUNT") {  // TODO
                     groupedarray.forEach(function (group: any) { // for each group of courses in the array
-                        var count: any = group[0][compare];
-
+                        var count: any = 0;
+                        var propertyarray:any=[];
                         for (var entry in group) {  // for each ind. course in the group
-                            if (group[entry][compare] < count)
-                                count = group[entry][compare];
+                           propertyarray.push(group[entry][compare]);
                         }
 
+                        var uniqueArray:any = propertyarray.filter(function(item:any, pos:any) {
+                            return propertyarray.indexOf(item) == pos;
+                        })
+
+                        count=uniqueArray.length;
                         group[0][fieldname] = (count); // add result of computation to first entry in group
-                        mresultarray.push(group[0]); // add first result of each group to final array
+                    //    mresultarray.push(group[0]); // add first result of each group to final array
                     });
                 }
 
 
-                Log.trace(JSON.stringify(mresultarray));
 
 
             }
-
+            groupedarray.forEach(function (group: any) { // for each group of courses in the array
+                mresultarray.push(group[0]);
+            });
+//
         }
 
 
@@ -436,19 +460,25 @@ export default class QueryController {
 
             function order2(queryorder: any) {
 
-                Log.trace(JSON.stringify(queryorder["keys"]));
+               if (queryorder["dir"] == "UP"){  //sort nums ascending
 
-               if (queryorder["dir"] == "UP"){  //sort ascending
-                   filteredresult.sort(function (a: any, b: any) {
-                       var first:any= a[queryorder["keys"][0]] - b[queryorder["keys"][0]];
-                        if (first !== 0){
-                            return first;
-                        }
-                        var second:any= a[queryorder["keys"][1]] - b[queryorder["keys"][1]];
-                        return second;
-                   })
+                    filteredresult.sort(function (a: any, b: any) {
+                        var ret: any = a[queryorder["keys"][0]] - b[queryorder["keys"][0]] || a[queryorder["keys"][1]] - b[queryorder["keys"][1]]||a[queryorder["keys"][2]] - b[queryorder["keys"][2]] ||a[queryorder["keys"][3]] - b[queryorder["keys"][3]] ||a[queryorder["keys"][4]] - b[queryorder["keys"][4]];
+                        return ret;
 
-               }
+                    })
+
+                }
+
+                if (queryorder["dir"] == "DOWN"){  //sort nums ascending
+
+                    filteredresult.sort(function (a: any, b: any) {
+                        var ret: any = b[queryorder["keys"][0]] - a[queryorder["keys"][0]] || b[queryorder["keys"][1]] - a[queryorder["keys"][1]]||b[queryorder["keys"][2]] - a[queryorder["keys"][2]] ||b[queryorder["keys"][3]] - a[queryorder["keys"][3]] ||b[queryorder["keys"][4]] - a[queryorder["keys"][4]];
+                        return ret;
+
+                    })
+
+                }
 
             }
 
@@ -503,7 +533,7 @@ export default class QueryController {
 
 
             var result: QueryResponse = JSON.parse(JSON.stringify({render: "TABLE", result: filteredresult}));
-
+Log.trace(mresultarray.length);
             return result;
         }
     }
