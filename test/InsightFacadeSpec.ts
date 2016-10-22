@@ -7,14 +7,19 @@ import {expect} from 'chai';
 import InsightFacade from "../src/controller/InsightFacade";
 import {InsightResponse} from "../src/controller/IInsightFacade";
 
+import QueryController from "../src/controller/QueryController";
+import {QueryRequest} from "../src/controller/QueryController";
+
 describe("InsightFacade", function () {
 this.timeout(30000);
     var zipFileContents: string = null;
+    var sampleQuery: string = null;
     var facade: InsightFacade = null;
     before(function () {
         Log.info('InsightController::before() - start');
         // this zip might be in a different spot for you
         zipFileContents = new Buffer(fs.readFileSync('310courses.1.0.zip')).toString('base64');
+        sampleQuery = new Buffer(fs.readFileSync('./test/results/q4.json')).toString('base64');
         try {
             // what you delete here is going to depend on your impl, just make sure
             // all of your temporary files and directories are deleted
@@ -59,4 +64,44 @@ this.timeout(30000);
             expect(response.code).to.equal(400);
         });
     });
+
+/*    it("Should be able to respond to a query (200)", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        let query: QueryRequest = {
+            GET: ["courses_id", "courseAverage"],
+            WHERE: {IS: {"courses_dept": "cpsc"}} ,
+            GROUP: [ "courses_id" ],
+            APPLY: [ {"courseAverage": {AVG: "courses_avg"}} ],
+            ORDER: { dir: "UP", keys: ["courseAverage", "courses_id"]},
+            AS:"TABLE"
+        };
+        return facade.performQuery(query).then(function (response: InsightResponse) {
+            expect(response.body).to.deep.equal(sampleQuery);
+        }).catch(function (response: InsightResponse) {
+            expect.fail('Should not happen');
+        });
+    });*/
+
+    it("Should be able to delete a dataset (204)", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        return facade.removeDataset('courses').then(function (response: InsightResponse) {
+            expect(response.code).to.equal(204);
+        }).catch(function (response: InsightResponse) {
+            expect.fail('Should not happen');
+        });
+    });
+
+    it("Should not be able to delete a dataset that has not been PUT (404)", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        return facade.removeDataset('Nonexistant id').then(function (response: InsightResponse) {
+            expect.fail();
+        }).catch(function (response: InsightResponse) {
+            expect(response.code).to.equal(404);
+        });
+    });
+
+
 });
