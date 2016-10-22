@@ -26,6 +26,90 @@ export default class QueryController {
     }
 
     public isValid(query: QueryRequest): boolean {
+
+Log.trace(JSON.stringify(query["GROUP"]));
+        Log.trace(JSON.stringify(query["APPLY"]));
+      if (typeof query["GROUP"] !== undefined && JSON.stringify(query["GROUP"])=="[]"){   // empty group not valid
+            return false;
+        }
+
+        if (typeof query["APPLY"] !== 'undefined' && typeof query["GROUP"] == 'undefined'){
+            return false; //apply w/o group
+        }
+
+        if (typeof query["GROUP"] !== 'undefined' && typeof query["APPLY"] == 'undefined'){
+            return false; //group w/o apply
+        }
+
+        if (typeof query["GROUP"] !== 'undefined'){
+            var qgroup:any= query["GROUP"];
+            for (var qk in qgroup){
+                if (qgroup[qk] !== "courses_dept" && qgroup[qk] !== "courses_id" && qgroup[qk] !== "courses_avg" && qgroup[qk] !== "courses_instructor" && qgroup[qk] !== "courses_title" && qgroup[qk] !== "courses_fail" && qgroup[qk] !== "courses_fail" && qgroup[qk] !== "courses_audit" )
+                    return false; //group contains valid keys
+            }
+        }
+
+        if (typeof query["GROUP"] !== 'undefined' && typeof query["GET"] !== 'undefined'){ //All keys in GROUP should be present in GET
+            for (var i = 0; i < query["GROUP"].length; i++) {
+                if (query["GET"].indexOf(query["GROUP"][i]) < 0) {
+                   return false;
+                }
+            }
+
+        }
+
+    //All keys in GET should be in either GROUP or APPLY.
+
+        //If a key appears in GROUP or in APPLY, it cannot appear in the other one.
+
+        if (typeof query["APPLY"] !== undefined && typeof query["GROUP"] !== undefined){
+            var qapply:any= query["APPLY"];
+            var qgroup:any= query["GROUP"];
+            var applyfields:any=[];
+
+
+            for (var b in qapply){
+                applyfields.push(qapply[b][Object.keys(qapply[b])[0]][Object.keys(qapply[b][Object.keys(qapply[b])[0]])[0]]);
+            }
+
+            for (var qk in qgroup){ //every key in GROUP
+                if (applyfields.indexOf(qgroup[qk]) > -1) //if APPLY also contains, return false
+                  return false; //If a key appears in GROUP or in APPLY, it cannot appear in the other one.
+            }
+
+        }
+
+
+        //All keys in GET that are not separated by an underscore should appear in APPLY.
+
+        if (typeof query["APPLY"] !== 'undefined') {
+            var qapply: any = query["APPLY"];
+            var applytargets: any = [];
+            for (var a in qapply) { // for every "apply" object
+
+                applytargets.push(Object.keys((qapply[a]))[0]); // push all apply targets into an array
+            }
+
+            function hasDuplicates(array:any) {  //check if array contains duplicates
+                var valuesSoFar = Object.create(null);
+                for (var i = 0; i < array.length; ++i) {
+                    var value = array[i];
+                    if (value in valuesSoFar) {
+                        return true;
+                    }
+                    valuesSoFar[value] = true;
+                }
+                return false;
+            }
+
+            if (hasDuplicates(applytargets)){        //APPLY rules should be unique.
+                return false;
+            }
+
+        }
+
+
+        //----------
         if (typeof query !== 'undefined' && query !== null && Object.keys(query).length > 0 && typeof query["AS"] !== 'undefined') {
 
             if (typeof query["ORDER"] !== 'undefined' && typeof query["ORDER"] == 'string') {
@@ -322,6 +406,14 @@ export default class QueryController {
 
 // APPLY ---------------------------------------------------------
             mresultarray = []; // clear final result array
+
+            if (JSON.stringify(queryapply) == "[]"){ //if empty apply, just return first coourse in each group
+
+                groupedarray.forEach(function (group: any) { // for each group of courses in the array
+                    mresultarray.push(group[0]);
+             })
+            }
+
             for (var a in queryapply) { // for every "apply" computation you need
 
                 var fieldname: any = Object.keys((queryapply[a]))[0]; // field name to add, e.g. maxFail
@@ -383,10 +475,10 @@ export default class QueryController {
                         }
 
                         var uniqueArray:any = propertyarray.filter(function(item:any, pos:any) {
-                            return propertyarray.indexOf(item) == pos;
+                            return propertyarray.indexOf(item) == pos;  //filter out duplicates
                         })
 
-                        count=uniqueArray.length;
+                        count=uniqueArray.length; //return length of unique array
                         group[0][fieldname] = (count); // add result of computation to first entry in group
                     //    mresultarray.push(group[0]); // add first result of each group to final array
                     });
