@@ -27,8 +27,8 @@ export default class QueryController {
 
     public isValid(query: QueryRequest): boolean {
 
-Log.trace(JSON.stringify(query["GROUP"]));
-        Log.trace(JSON.stringify(query["APPLY"]));
+//Log.trace(JSON.stringify(query["GROUP"]));
+     //   Log.trace(JSON.stringify(query["APPLY"]));
       if (typeof query["GROUP"] !== undefined && JSON.stringify(query["GROUP"])=="[]"){   // empty group not valid
             return false;
         }
@@ -57,12 +57,32 @@ Log.trace(JSON.stringify(query["GROUP"]));
             }
 
         }
+        //----^working
 
-    //All keys in GET should be in either GROUP or APPLY.
+    /*NEW:All keys in GET should be in either GROUP or APPLY.
+
+        if (typeof query["APPLY"] !== 'undefined' && typeof query["GROUP"] !== 'undefined' && typeof query["GET"] !== 'undefined'){ //All keys in GROUP should be present in GET
+            var applyfields5:any=[];
+            var qapply:any=query["APPLY"];
+            var qget:any=query["GET"];
+
+            for (var b in qapply){
+                applyfields5.push(Object.keys(qapply[b])[0]);
+            Log.trace("FIELD" + applyfields5[b]);
+            }
+
+            for (var getkey in qget) {
+                if (applyfields5.indexOf(qget[getkey]) < 0 && query["GROUP"].indexOf(qget[getkey]) < 0) {
+                   return false;
+                }
+            }
+
+        }
+        */
 
         //If a key appears in GROUP or in APPLY, it cannot appear in the other one.
 
-        if (typeof query["APPLY"] !== undefined && typeof query["GROUP"] !== undefined){
+        if (typeof query["APPLY"] !== 'undefined' && typeof query["GROUP"] !== 'undefined'){
             var qapply:any= query["APPLY"];
             var qgroup:any= query["GROUP"];
             var applyfields:any=[];
@@ -73,6 +93,7 @@ Log.trace(JSON.stringify(query["GROUP"]));
             }
 
             for (var qk in qgroup){ //every key in GROUP
+
                 if (applyfields.indexOf(qgroup[qk]) > -1) //if APPLY also contains, return false
                   return false; //If a key appears in GROUP or in APPLY, it cannot appear in the other one.
             }
@@ -80,7 +101,23 @@ Log.trace(JSON.stringify(query["GROUP"]));
         }
 
 
-        //All keys in GET that are not separated by an underscore should appear in APPLY.
+      //NEW: All keys in GET that are not separated by an underscore should appear in APPLY.
+   /*     if (typeof query["GET"] !== 'undefined' && typeof query["APPLY"] !== 'undefined'){ //All keys in GROUP should be present in GET
+            var applyfields6:any=[];
+            for (var b in qapply){
+                applyfields6.push(Object.keys(qapply[b])[0]);
+            }
+
+
+            for (var i = 0; i < query["GET"].length; i++) {
+                if (query["GET"][i].indexOf("_") < 0 && applyfields6.indexOf(query["GET"][i]) < 0) {
+                    return false;
+                }
+            }
+
+        }
+        */
+
 
         if (typeof query["APPLY"] !== 'undefined') {
             var qapply: any = query["APPLY"];
@@ -552,26 +589,44 @@ Log.trace(JSON.stringify(query["GROUP"]));
 
             function order2(queryorder: any) {
 
-               if (queryorder["dir"] == "UP"){  //sort nums ascending
+                if (queryorder["dir"] == "UP") {  //sort nums ascending
 
                     filteredresult.sort(function (a: any, b: any) {
-                        var ret: any = a[queryorder["keys"][0]] - b[queryorder["keys"][0]] || a[queryorder["keys"][1]] - b[queryorder["keys"][1]]||a[queryorder["keys"][2]] - b[queryorder["keys"][2]] ||a[queryorder["keys"][3]] - b[queryorder["keys"][3]] ||a[queryorder["keys"][4]] - b[queryorder["keys"][4]];
-                        return ret;
+                        let returnable = 0;
+                        for (let i = 0; i < filteredresult.length && returnable == 0; i++) {
+                            if (a[queryorder["keys"][i]] < b[queryorder["keys"][i]]) {
+                                returnable = -1;
+                            }
+
+                            if (a[queryorder["keys"][i]] > b[queryorder["keys"][i]]) {
+                                returnable = 1;
+                            }
+                        }
+                        return returnable;
 
                     })
 
                 }
 
-                if (queryorder["dir"] == "DOWN"){  //sort nums ascending
+
+                if (queryorder["dir"] == "DOWN") {  //sort nums ascending
 
                     filteredresult.sort(function (a: any, b: any) {
-                        var ret: any = b[queryorder["keys"][0]] - a[queryorder["keys"][0]] || b[queryorder["keys"][1]] - a[queryorder["keys"][1]]||b[queryorder["keys"][2]] - a[queryorder["keys"][2]] ||b[queryorder["keys"][3]] - a[queryorder["keys"][3]] ||b[queryorder["keys"][4]] - a[queryorder["keys"][4]];
-                        return ret;
+                        let returnable = 0;
+                        for (let i = 0; i < filteredresult.length && returnable == 0; i++) {
+                            if (b[queryorder["keys"][i]] < a[queryorder["keys"][i]]) {
+                                returnable = -1;
+                            }
+
+                            if (b[queryorder["keys"][i]] > a[queryorder["keys"][i]]) {
+                                returnable = 1;
+                            }
+                        }
+                        return returnable;
 
                     })
 
                 }
-
             }
 
 
