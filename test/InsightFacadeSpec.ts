@@ -9,17 +9,21 @@ import {InsightResponse} from "../src/controller/IInsightFacade";
 
 import QueryController from "../src/controller/QueryController";
 import {QueryRequest} from "../src/controller/QueryController";
+import {QueryResponse} from "../src/controller/QueryController";
 
 describe("InsightFacade", function () {
 this.timeout(30000);
     var zipFileContents: string = null;
-    var sampleQuery: string = null;
+    var sampleQuery1: any;
+    var sampleQuery2: any;
     var facade: InsightFacade = null;
     before(function () {
         Log.info('InsightController::before() - start');
         // this zip might be in a different spot for you
         zipFileContents = new Buffer(fs.readFileSync('310courses.1.0.zip')).toString('base64');
-        sampleQuery = new Buffer(fs.readFileSync('./test/results/q4.json')).toString('base64');
+        sampleQuery1 = JSON.parse(fs.readFileSync('./test/results/q4.json', 'utf8'));
+        sampleQuery2 = JSON.parse(fs.readFileSync('./test/results/q5.json', 'utf8'));
+
         try {
             // what you delete here is going to depend on your impl, just make sure
             // all of your temporary files and directories are deleted
@@ -65,23 +69,81 @@ this.timeout(30000);
         });
     });
 
-/*    it("Should be able to respond to a query (200)", function() {
+    it("Should be able to respond to query1 (200)", function() {
         var that = this;
         Log.trace("Starting test: " + that.test.title);
         let query: QueryRequest = {
-            GET: ["courses_id", "courseAverage"],
-            WHERE: {IS: {"courses_dept": "cpsc"}} ,
-            GROUP: [ "courses_id" ],
-            APPLY: [ {"courseAverage": {AVG: "courses_avg"}} ],
-            ORDER: { dir: "UP", keys: ["courseAverage", "courses_id"]},
-            AS:"TABLE"
+            "GET": ["courses_id", "courseAverage"],
+            "WHERE": {"IS": {"courses_dept": "cpsc"}} ,
+            "GROUP": [ "courses_id" ],
+            "APPLY": [ {"courseAverage": {"AVG": "courses_avg"}} ],
+            "ORDER": { "dir": "UP", "keys": ["courseAverage", "courses_id"]},
+            "AS":"TABLE"
         };
         return facade.performQuery(query).then(function (response: InsightResponse) {
-            expect(response.body).to.deep.equal(sampleQuery);
+            expect(response.body).to.deep.equal(sampleQuery1);
+            expect(response.code).to.equal(200);
         }).catch(function (response: InsightResponse) {
             expect.fail('Should not happen');
         });
-    });*/
+    });
+
+    it("Should be able to respond to query2 (200)", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        let query: QueryRequest = {
+            "GET": ["courses_dept", "courses_id", "courseAverage", "maxFail"],
+            "WHERE": {},
+            "GROUP": [ "courses_dept", "courses_id" ],
+            "APPLY": [ {"courseAverage": {"AVG": "courses_avg"}}, {"maxFail": {"MAX": "courses_fail"}} ],
+            "ORDER": { "dir": "UP", "keys": ["courseAverage", "maxFail", "courses_dept", "courses_id"]},
+            "AS":"TABLE"
+        };
+        return facade.performQuery(query).then(function (response: InsightResponse) {
+            expect(response.body).to.deep.equal(sampleQuery2);
+            expect(response.code).to.equal(200);
+        }).catch(function (response: InsightResponse) {
+            Log.trace(JSON.stringify(response.body));
+            expect.fail('Should not happen');
+        });
+    });
+
+    it("Should not be able to query a resource that has not been PUT (424)", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        let query: QueryRequest = {
+            "GET": ["test_dept", "test_avg"],
+            "WHERE": {
+                "GT": {
+                    "test_avg": 90
+                }
+            },
+            "ORDER": "test_avg",
+            "AS": "TABLE"
+        };
+        return facade.performQuery(query).then(function (response: InsightResponse) {
+            expect.fail();
+        }).catch(function (response: InsightResponse) {
+            expect(response.code).to.equal(424);
+        });
+    });
+
+    it("Should not be able to query with APPLY but not GROUP (400)", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        let query: QueryRequest = {
+            "GET": ["courses_id", "courseAverage"],
+            "WHERE": {"IS": {"courses_dept": "cpsc"}} ,
+            "APPLY": [ {"courseAverage": {"AVG": "courses_avg"}} ],
+            "ORDER": { "dir": "UP", "keys": ["courseAverage", "courses_id"]},
+            "AS":"TABLE"
+        };
+        return facade.performQuery(query).then(function (response: InsightResponse) {
+            expect.fail();
+        }).catch(function (response: InsightResponse) {
+            expect(response.code).to.equal(400);
+        });
+    });
 
     it("Should be able to delete a dataset (204)", function() {
         var that = this;

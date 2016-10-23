@@ -23,7 +23,7 @@ describe("QueryController", function () {
         let controller = new QueryController(dataset);
         let isValid = controller.isValid(query);
 
-        expect(isValid).to.equal(true);
+        expect(isValid).to.equal(false);
     });
 
     it("Should be able to invalidate an invalid query", function () {

@@ -72,20 +72,17 @@ export default class InsightFacade implements IInsightFacade {
             let controller = new QueryController(datasets);
             let isValid = controller.isValid(query);
 
-            Log.trace('if');
             if (datasets[id] == null) {
                 Log.trace('id null');
                 reject({code: 424, missing: 'id'});
             }
 
             else if (isValid) {
-                Log.trace('in promise');
                 let result = controller.query(query);
                 fulfill({code: 200, body: result});
             }
 
             else {
-                Log.trace('reject');
                 reject({code: 400, error: 'Query failed.'});
             }
         });
