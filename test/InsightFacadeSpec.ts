@@ -16,6 +16,7 @@ this.timeout(30000);
     var zipFileContents: string = null;
     var sampleQuery1: any;
     var sampleQuery2: any;
+    var sampleQuery3: any;
     var facade: InsightFacade = null;
     before(function () {
         Log.info('InsightController::before() - start');
@@ -23,6 +24,7 @@ this.timeout(30000);
         zipFileContents = new Buffer(fs.readFileSync('310courses.1.0.zip')).toString('base64');
         sampleQuery1 = JSON.parse(fs.readFileSync('./test/results/q4.json', 'utf8'));
         sampleQuery2 = JSON.parse(fs.readFileSync('./test/results/q5.json', 'utf8'));
+        sampleQuery3 = JSON.parse(fs.readFileSync('./test/results/q6.json', 'utf8'));
 
         try {
             // what you delete here is going to depend on your impl, just make sure
@@ -103,7 +105,25 @@ this.timeout(30000);
             expect(response.body).to.deep.equal(sampleQuery2);
             expect(response.code).to.equal(200);
         }).catch(function (response: InsightResponse) {
-            Log.trace(JSON.stringify(response.body));
+            expect.fail('Should not happen');
+        });
+    });
+
+    it ("Should be able to respond to query3 (200)", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        let query: QueryRequest = {
+            "GET": ["courses_dept", "courses_id", "numSections"],
+            "WHERE": {},
+            "GROUP": [ "courses_dept", "courses_id" ],
+            "APPLY": [ {"numSections": {"COUNT": "courses_uuid"}} ],
+            "ORDER": { "dir": "UP", "keys": ["numSections", "courses_dept", "courses_id"]},
+            "AS":"TABLE"
+        };
+        return facade.performQuery(query).then(function (response: InsightResponse) {
+            expect(response.body).to.deep.equal(sampleQuery3);
+            expect(response.code).to.equal(200);
+        }).catch(function (response: InsightResponse) {
             expect.fail('Should not happen');
         });
     });
@@ -134,6 +154,41 @@ this.timeout(30000);
         let query: QueryRequest = {
             "GET": ["courses_id", "courseAverage"],
             "WHERE": {"IS": {"courses_dept": "cpsc"}} ,
+            "APPLY": [ {"courseAverage": {"AVG": "courses_avg"}} ],
+            "ORDER": { "dir": "UP", "keys": ["courseAverage", "courses_id"]},
+            "AS":"TABLE"
+        };
+        return facade.performQuery(query).then(function (response: InsightResponse) {
+            expect.fail();
+        }).catch(function (response: InsightResponse) {
+            expect(response.code).to.equal(400);
+        });
+    });
+
+    it("Should not be able to query with GROUP but not APPLY (400)", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        let query: QueryRequest = {
+            "GET": ["courses_id", "courseAverage"],
+            "WHERE": {"IS": {"courses_dept": "cpsc"}} ,
+            "GROUP": [ "courses_id" ],
+            "ORDER": { "dir": "UP", "keys": ["courseAverage", "courses_id"]},
+            "AS":"TABLE"
+        };
+        return facade.performQuery(query).then(function (response: InsightResponse) {
+            expect.fail();
+        }).catch(function (response: InsightResponse) {
+            expect(response.code).to.equal(400);
+        });
+    });
+
+    it("Should not be able to query with invalid GROUP keys", function () {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        let query: QueryRequest = {
+            "GET": ["courses_id", "courseAverage"],
+            "WHERE": {"IS": {"courses_dept": "cpsc"}} ,
+            "GROUP": [ "coursess_id" ],
             "APPLY": [ {"courseAverage": {"AVG": "courses_avg"}} ],
             "ORDER": { "dir": "UP", "keys": ["courseAverage", "courses_id"]},
             "AS":"TABLE"

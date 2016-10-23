@@ -59,7 +59,7 @@ export default class QueryController {
         }
         //----^working
 
-    /*NEW:All keys in GET should be in either GROUP or APPLY.
+    //NEW:All keys in GET should be in either GROUP or APPLY.
 
         if (typeof query["APPLY"] !== 'undefined' && typeof query["GROUP"] !== 'undefined' && typeof query["GET"] !== 'undefined'){ //All keys in GROUP should be present in GET
             var applyfields5:any=[];
@@ -78,7 +78,6 @@ export default class QueryController {
             }
 
         }
-        */
 
         //If a key appears in GROUP or in APPLY, it cannot appear in the other one.
 
@@ -102,7 +101,7 @@ export default class QueryController {
 
 
       //NEW: All keys in GET that are not separated by an underscore should appear in APPLY.
-   /*     if (typeof query["GET"] !== 'undefined' && typeof query["APPLY"] !== 'undefined'){ //All keys in GROUP should be present in GET
+        if (typeof query["GET"] !== 'undefined' && typeof query["APPLY"] !== 'undefined'){ //All keys in GROUP should be present in GET
             var applyfields6:any=[];
             for (var b in qapply){
                 applyfields6.push(Object.keys(qapply[b])[0]);
@@ -116,7 +115,6 @@ export default class QueryController {
             }
 
         }
-        */
 
 
         if (typeof query["APPLY"] !== 'undefined') {
