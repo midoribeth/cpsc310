@@ -555,7 +555,7 @@ export default class QueryController {
                         if (rkarray[rkey] == columnneeded) { //if key matches a key specified by GET
                             //Log.trace(rkarray[rkey]); // prints all keys for each course
                             //  Log.trace(resultarray[course][rkarray[rkey]]); // prints key value for dept
-                            if (!(columnneeded=="avg" || columnneeded=="dept" || columnneeded=="id" || columnneeded=="instructor" || columnneeded=="title" || columnneeded=="pass" || columnneeded=="fail" || columnneeded=="audit")) { // if key doesn't have underscore
+                            if (!(columnneeded=="uuid" || columnneeded=="avg" || columnneeded=="dept" || columnneeded=="id" || columnneeded=="instructor" || columnneeded=="title" || columnneeded=="pass" || columnneeded=="fail" || columnneeded=="audit")) { // if key doesn't have underscore
                                 finalcourseinfo[columnneeded] = mresultarray[course][rkarray[rkey]]; // put that key's value into new obj
 
                             }

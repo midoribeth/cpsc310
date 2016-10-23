@@ -110,7 +110,7 @@ export default class DatasetController {
                                             fail: coursedata.result[i].Fail,
                                             audit: coursedata.result[i].Audit,
 
-                                            uuid: coursedata.result[i].Id,
+                                            uuid: coursedata.result[i]["id"],
 
                                         }
                                         pcdarray.push(processedcoursedata);
