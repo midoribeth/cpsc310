@@ -27,12 +27,6 @@ export default class QueryController {
 
     public isValid(query: QueryRequest): boolean {
 
-        if (JSON.stringify(query["GET"]) == "[]") { //empty GET
-            return false;
-        }
-
-
-
         if (typeof query["APPLY"] !== 'undefined') {
 
             var qapply: any = query["APPLY"];
