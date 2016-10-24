@@ -28,16 +28,16 @@ export default class DatasetController {
      * @param id
      * @returns {{}}
      */
-    public getDataset(id: string): any {
+/*    public getDataset(id: string): any {
         // TODO: this should check if the dataset is on disk in ./data if it is not already in memory.
-        /*var fs = require('fs');
+        /!*var fs = require('fs');
         var path = './data/' + id + '.json';
         var stats:any;
 
-        stats = fs.statSync(path);*/
+        stats = fs.statSync(path);*!/
 
         return this.datasets[id];
-    }
+    }*/
 
     public getDatasets(): Datasets {
         // TODO: if datasets is empty, load all dataset files in ./data from disk

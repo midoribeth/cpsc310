@@ -47,7 +47,7 @@ export default class InsightFacade implements IInsightFacade {
                     fulfill({code: 204, body: 'Dataset deleted.'});
                 }
                 catch (e) {
-                    reject({code: 404, error: 'Dataset does not exists.'});
+                    reject({code: 404, error: e.message});
                 }
             }
             catch (err) {
@@ -62,7 +62,7 @@ export default class InsightFacade implements IInsightFacade {
             try {
                 InsightFacade.datasetController.getDatasets();
             } catch (err) {
-                reject({code: 424, missing: "courses"});
+                reject({code: 424, error: "Missing courses"});
             }
 
             let datasets: Datasets = InsightFacade.datasetController.getDatasets();
@@ -72,18 +72,20 @@ export default class InsightFacade implements IInsightFacade {
             let controller = new QueryController(datasets);
             let isValid = controller.isValid(query);
 
-            if (datasets[id] == null) {
+/*            if (datasets[id] == null) {
                 Log.trace('id null');
-                reject({code: 424, missing: 'id'});
-            }
+                reject({code: 424, error: 'Missing id'});
+            }*/
 
-            else if (isValid) {
-                let result = controller.query(query);
-                fulfill({code: 200, body: result});
-            }
-
-            else {
-                reject({code: 400, error: 'Query failed.'});
+            if (isValid) {
+                try {
+                    let result = controller.query(query);
+                    fulfill({code: 200, body: result});
+                } catch(err) {
+                    reject({code: 400, error: err.message});
+                }
+            } else {
+                reject({code: 400, error: 'Invalid query'});
             }
         });
     }

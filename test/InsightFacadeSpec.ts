@@ -7,9 +7,8 @@ import {expect} from 'chai';
 import InsightFacade from "../src/controller/InsightFacade";
 import {InsightResponse} from "../src/controller/IInsightFacade";
 
-import QueryController from "../src/controller/QueryController";
 import {QueryRequest} from "../src/controller/QueryController";
-import {QueryResponse} from "../src/controller/QueryController";
+import RouteHandler from "../src/rest/RouteHandler";
 
 describe("InsightFacade", function () {
 this.timeout(30000);
@@ -17,7 +16,9 @@ this.timeout(30000);
     var sampleQuery1: any;
     var sampleQuery2: any;
     var sampleQuery3: any;
+    var sampleQuery4: any;
     var facade: InsightFacade = null;
+    //var routeHandler: RouteHandler = null;
     before(function () {
         Log.info('InsightController::before() - start');
         // this zip might be in a different spot for you
@@ -25,6 +26,7 @@ this.timeout(30000);
         sampleQuery1 = JSON.parse(fs.readFileSync('./test/results/q4.json', 'utf8'));
         sampleQuery2 = JSON.parse(fs.readFileSync('./test/results/q5.json', 'utf8'));
         sampleQuery3 = JSON.parse(fs.readFileSync('./test/results/q6.json', 'utf8'));
+        sampleQuery4 = JSON.parse(fs.readFileSync('./test/results/q7.json', 'utf8'));
 
         try {
             // what you delete here is going to depend on your impl, just make sure
@@ -39,6 +41,7 @@ this.timeout(30000);
 
     beforeEach(function () {
         facade = new InsightFacade();
+        //routeHandler = new RouteHandler();
     });
 
     it("Should be able to add a new dataset (204)", function () {
@@ -90,6 +93,7 @@ this.timeout(30000);
         });
     });
 
+
     it("Should be able to respond to query2 (200)", function() {
         var that = this;
         Log.trace("Starting test: " + that.test.title);
@@ -128,6 +132,27 @@ this.timeout(30000);
         });
     });
 
+    it ("Should be able to respond to query4 (200)", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        let query: QueryRequest = {
+            "GET": ["courses_dept", "courses_id", "numSection", "averageGrade", "countPass", "averageFail"],
+            "WHERE": {"IS": {"courses_dept": "cpsc"}},
+            "GROUP": [ "courses_dept", "courses_id" ],
+            "APPLY": [ {"numSection": {"COUNT": "courses_uuid"}}, {"averageGrade": {"AVG": "courses_avg"}},
+                {"countPass": {"COUNT": "courses_pass"}}, {"averageFail": {"AVG": "courses_fail"}}
+            ],
+            "ORDER": { "dir": "DOWN", "keys": ["courses_id"]},
+            "AS":"TABLE"
+        };
+        return facade.performQuery(query).then(function (response: InsightResponse) {
+            expect(response.body).to.deep.equal(sampleQuery4);
+            expect(response.code).to.equal(200);
+        }).catch(function (response: InsightResponse) {
+            expect.fail('Should not happen');
+        });
+    });
+
     it("Should not be able to query a resource that has not been PUT (424)", function() {
         var that = this;
         Log.trace("Starting test: " + that.test.title);
@@ -155,7 +180,7 @@ this.timeout(30000);
             "GET": ["courses_id", "courseAverage"],
             "WHERE": {"IS": {"courses_dept": "cpsc"}} ,
             "APPLY": [ {"courseAverage": {"AVG": "courses_avg"}} ],
-            "ORDER": { "dir": "UP", "keys": ["courseAverage", "courses_id"]},
+            "ORDER": { "dir": "UP", "keys": ["courseAverage"]},
             "AS":"TABLE"
         };
         return facade.performQuery(query).then(function (response: InsightResponse) {
@@ -172,7 +197,7 @@ this.timeout(30000);
             "GET": ["courses_id", "courseAverage"],
             "WHERE": {"IS": {"courses_dept": "cpsc"}} ,
             "GROUP": [ "courses_id" ],
-            "ORDER": { "dir": "UP", "keys": ["courseAverage", "courses_id"]},
+            "ORDER": { "dir": "UP", "keys": ["courses_id"]},
             "AS":"TABLE"
         };
         return facade.performQuery(query).then(function (response: InsightResponse) {
@@ -199,6 +224,44 @@ this.timeout(30000);
             expect(response.code).to.equal(400);
         });
     });
+
+    it("All keys in GET should be in either GROUP or APPLY (400)", function () {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        let query: QueryRequest = {
+            "GET": ["numSections", "courses_dept", "courses_id"],
+            "WHERE": {},
+            "GROUP": [ "courses_dept" ],
+            "APPLY": [ {"numSections": {"COUNT": "courses_uuid"}} ],
+            "ORDER": { "dir": "UP", "keys": ["numSections", "courses_dept"]},
+            "AS":"TABLE"
+        };
+        return facade.performQuery(query).then(function (response: InsightResponse) {
+            expect.fail();
+        }).catch(function (response: InsightResponse) {
+            expect(response.code).to.equal(400);
+        });
+    });
+
+    it ("All keys in GET that are not separated by an underscore should appear in APPLY (400)", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        let query: QueryRequest = {
+            "GET": ["courses_dept", "courses_id", "numSections"],
+            "WHERE": {},
+            "GROUP": [ "courses_dept", "courses_id" ],
+            "APPLY": [ {"numSections": {"COUNT": "courses_uuid"}} ],
+            "ORDER": { "dir": "UP", "keys": ["numSections", "courses_dept", "courses_id"]},
+            "AS":"TABLE"
+        };
+        return facade.performQuery(query).then(function (response: InsightResponse) {
+            expect(response.body).to.deep.equal(sampleQuery3);
+            expect(response.code).to.equal(200);
+        }).catch(function (response: InsightResponse) {
+            expect.fail('Should not happen');
+        });
+    });
+
 
     it("Should be able to delete a dataset (204)", function() {
         var that = this;

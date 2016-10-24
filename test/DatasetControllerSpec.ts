@@ -5,12 +5,21 @@
 import DatasetController from "../src/controller/DatasetController";
 import Log from "../src/Util";
 
+import fs = require('fs');
 import JSZip = require('jszip');
 import {expect} from 'chai';
 
 describe("DatasetController", function () {
 
+    var zipFileContents: string = null;
+    var controller: DatasetController = null;
+
+    before(function () {
+        zipFileContents = new Buffer(fs.readFileSync('310courses.1.0.zip')).toString('base64');
+    });
+
     beforeEach(function () {
+        controller = new DatasetController();
     });
 
     afterEach(function () {
@@ -38,6 +47,15 @@ describe("DatasetController", function () {
 
     it('Print myZip', function() {
         Log.test("asdf");
+    });
+
+    it('Should process correctly', function() {
+        return controller.process('courses', zipFileContents).then(function (b: boolean) {
+            expect(b).to.equal(true);
+        }).catch(function () {
+            expect.fail('Should not happen');
+        });
+
     });
 
 });

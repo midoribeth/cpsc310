@@ -55,8 +55,8 @@ export default class RouteHandler {
                 //var insightResponse: InsightResponse;
                 RouteHandler.insightFacade.addDataset(id, req.body).then(function(response: InsightResponse) {
                     res.json(response.code);
-                }).catch(function (response: InsightResponse) {
-                    res.json(response.code);
+                }).catch(function (err: InsightResponse) {
+                    res.json(err.code, err.body);
                 });
                 //res.json(insightResponse.code);
 
@@ -92,8 +92,8 @@ export default class RouteHandler {
 
             RouteHandler.insightFacade.performQuery(query).then(function(response: InsightResponse) {
                 res.json(response.code, response.body);
-            }).catch(function (response: InsightResponse) {
-                res.json(response.code, response.body);
+            }).catch(function (err: InsightResponse) {
+                res.json(err.code, err.body);
             });
 
             /*try {
@@ -135,9 +135,9 @@ export default class RouteHandler {
 
             RouteHandler.insightFacade.removeDataset(id).then(function(response: InsightResponse) {
                 res.json(response.code);
-            }).catch(function (response: InsightResponse) {
-                res.json(response.code);
-            })
+            }).catch(function (err: InsightResponse) {
+                res.json(err.code);
+            });
 
             /*let controller = RouteHandler.datasetController;
             var fs = require('fs'),
