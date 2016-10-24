@@ -27,6 +27,26 @@ export default class QueryController {
 
     public isValid(query: QueryRequest): boolean {
 
+        if (typeof query["APPLY"] !== 'undefined') {
+
+            var qapply: any = query["APPLY"];
+
+
+            for (var b in qapply) {
+                var fieldname: any = Object.keys(qapply[b])[0];
+                var token: any = Object.keys(qapply[b][fieldname])[0]; //e.g. MAX
+                var key: any = (qapply[b][fieldname][token]); //e.g. courses_avg
+
+                if (token == "MAX" || token == "MIN" || token == "AVG") {
+                    if (key !== 'courses_avg' && key !== 'courses_fail' && key !== 'courses_pass' && key !== 'courses_audit') {
+                     return false;
+                    }
+
+                }
+
+            }
+        }
+
 //Log.trace(JSON.stringify(query["GROUP"]));
      //   Log.trace(JSON.stringify(query["APPLY"]));
       if (typeof query["GROUP"] !== undefined && JSON.stringify(query["GROUP"])=="[]"){   // empty group not valid
@@ -68,7 +88,7 @@ export default class QueryController {
 
             for (var b in qapply){
                 applyfields5.push(Object.keys(qapply[b])[0]);
-            Log.trace("FIELD" + applyfields5[b]);
+
             }
 
             for (var getkey in qget) {
@@ -142,6 +162,8 @@ export default class QueryController {
             }
 
         }
+
+
 
 
         //----------
