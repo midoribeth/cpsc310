@@ -8,7 +8,6 @@ import InsightFacade from "../src/controller/InsightFacade";
 import {InsightResponse} from "../src/controller/IInsightFacade";
 
 import {QueryRequest} from "../src/controller/QueryController";
-import RouteHandler from "../src/rest/RouteHandler";
 
 describe("InsightFacade", function () {
 this.timeout(30000);
@@ -18,7 +17,6 @@ this.timeout(30000);
     var sampleQuery3: any;
     var sampleQuery4: any;
     var facade: InsightFacade = null;
-    //var routeHandler: RouteHandler = null;
     before(function () {
         Log.info('InsightController::before() - start');
         // this zip might be in a different spot for you
@@ -41,7 +39,6 @@ this.timeout(30000);
 
     beforeEach(function () {
         facade = new InsightFacade();
-        //routeHandler = new RouteHandler();
     });
 
     it("Should be able to add a new dataset (204)", function () {

@@ -41,13 +41,13 @@ export default class QueryController {
             return false; //group w/o apply
         }
 
-/*        if (typeof query["GROUP"] !== 'undefined'){
+        if (typeof query["GROUP"] !== 'undefined'){
             var qgroup:any= query["GROUP"];
             for (var qk in qgroup){
                 if (qgroup[qk] !== "courses_dept" && qgroup[qk] !== "courses_id" && qgroup[qk] !== "courses_avg" && qgroup[qk] !== "courses_instructor" && qgroup[qk] !== "courses_title" && qgroup[qk] !== "courses_pass" && qgroup[qk] !== "courses_fail" && qgroup[qk] !== "courses_audit" && qgroup[qk] !== "courses_uuid")
                     return false; //group contains valid keys
             }
-        }*/
+        }
 
         if (typeof query["GROUP"] !== 'undefined' && typeof query["GET"] !== 'undefined'){ //All keys in GROUP should be present in GET
             for (var i = 0; i < query["GROUP"].length; i++) {
@@ -61,7 +61,7 @@ export default class QueryController {
 
     //NEW:All keys in GET should be in either GROUP or APPLY.
 
-/*        if (typeof query["APPLY"] !== 'undefined' && typeof query["GROUP"] !== 'undefined' && typeof query["GET"] !== 'undefined'){ //All keys in GROUP should be present in GET
+        if (typeof query["APPLY"] !== 'undefined' && typeof query["GROUP"] !== 'undefined' && typeof query["GET"] !== 'undefined'){ //All keys in GROUP should be present in GET
             var applyfields5:any=[];
             var qapply:any=query["APPLY"];
             var qget:any=query["GET"];
@@ -77,10 +77,9 @@ export default class QueryController {
                 }
             }
 
-        }*/
+        }
 
         //If a key appears in GROUP or in APPLY, it cannot appear in the other one.
-/*
 
         if (typeof query["APPLY"] !== 'undefined' && typeof query["GROUP"] !== 'undefined'){
             var qapply:any= query["APPLY"];
@@ -99,11 +98,10 @@ export default class QueryController {
             }
 
         }
-*/
 
 
       //NEW: All keys in GET that are not separated by an underscore should appear in APPLY.
-/*        if (typeof query["GET"] !== 'undefined' && typeof query["APPLY"] !== 'undefined'){ //All keys in GROUP should be present in GET
+        if (typeof query["GET"] !== 'undefined' && typeof query["APPLY"] !== 'undefined'){ //All keys in GROUP should be present in GET
             var applyfields6:any=[];
             for (var b in qapply){
                 applyfields6.push(Object.keys(qapply[b])[0]);
@@ -143,7 +141,7 @@ export default class QueryController {
                 return false;
             }
 
-        }*/
+        }
 
 
         //----------
