@@ -197,9 +197,6 @@ export default class QueryController {
         var dict: any = this.datasets["courses"];
         var mresultarray: any = [];
 
-        let querygroup: any = query["GROUP"];
-        let queryapply: any = query["APPLY"];
-
 
         let querybody: any = query["WHERE"];
         let keyarray: any = Object.keys(querybody);
@@ -426,6 +423,10 @@ export default class QueryController {
 
         if (typeof (query["GROUP"]) !== 'undefined' && typeof (query["APPLY"]) !== 'undefined') {
 
+
+                let querygroup: any = query["GROUP"];
+                let queryapply: any = query["APPLY"];
+
             var groupedarray: any;
 
             function arrayFromObject(obj: any) {  //http://codereview.stackexchange.com/questions/37028/grouping-elements-in-array-by-multiple-properties
@@ -640,6 +641,7 @@ export default class QueryController {
 
                 }
 
+          
 
                 if (queryorder["dir"] == "DOWN") {  //sort nums ascending
 
