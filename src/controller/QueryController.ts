@@ -136,6 +136,18 @@ export default class QueryController {
 
         }
 
+        //NEW: All keys in GET with an underscore should appear in GROUP.
+        if (typeof query["GET"] !== 'undefined' && typeof query["GROUP"] !== 'undefined'){ //All keys in GROUP should be present in GET
+
+            for (var i = 0; i < query["GET"].length; i++) {
+                if (query["GET"][i].indexOf("_") >= 0 && query["GROUP"].indexOf(query["GET"][i]) < 0) {
+                    return false;
+                }
+            }
+
+        }
+
+
 
         if (typeof query["APPLY"] !== 'undefined') {
             var qapply: any = query["APPLY"];
