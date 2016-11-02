@@ -332,10 +332,26 @@ export default class QueryController {
 
                 for (var i = 0, len = dict[key].result.length; i < len; i++) { //for every result in course object
                     let section = dict[key].result[i];
-                    if (section[compareto] == comparevalue) {   //section.avg should be section.key2, can you use the dictionary you were working on here?
-
+                    if ((comparevalue.indexOf("*")==0) && (comparevalue.indexOf("*",1)==comparevalue.length-1)){
+                        var cv:any = comparevalue.substring(1, comparevalue.length-1);
+                        if (section[compareto].indexOf(cv)>=0){
+                            resultarray.push(section);
+                        }
+                    }
+                    else if (comparevalue.indexOf("*")==0){ //* at beg
+                        var cv1:any = comparevalue.substring(1, comparevalue.length); //e.g. "he"
+                        if (section[compareto].indexOf(cv1)==section[compareto].length-cv1.length){
+                            resultarray.push(section);
+                        }
+                    }
+                    else if (comparevalue.indexOf("*")==comparevalue.length-1){ //* at end
+                        var cv2:any = comparevalue.substring(0, comparevalue.length-1);
+                        if (section[compareto].indexOf(cv2)==0){
+                            resultarray.push(section);
+                        }
+                    }
+                    else if (section[compareto] == comparevalue) {   //
                         resultarray.push(section);
-
                     }
                 }
             }
