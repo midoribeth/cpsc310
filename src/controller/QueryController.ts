@@ -27,6 +27,10 @@ export default class QueryController {
 
     public isValid(query: QueryRequest): boolean {
 
+        if (typeof query["AS"] == 'undefined') {
+            return false;
+        }
+
         if (typeof query["APPLY"] !== 'undefined') {
 
             var qapply: any = query["APPLY"];

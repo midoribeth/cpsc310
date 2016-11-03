@@ -71,6 +71,26 @@ this.timeout(30000);
         });
     });
 
+    it("Should not be able to respond to a query with an empty GET", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        let query: QueryRequest = {
+            "GET": [],
+            "WHERE": {
+                "GT": {
+                    "courses_avg": 90
+                }
+            },
+            "ORDER": "courses_avg",
+            "AS": "TABLE"
+        }
+        return facade.performQuery(query).then(function (response: InsightResponse) {
+            expect.fail();
+        }).catch(function (response: InsightResponse) {
+            expect(response.code).to.equal(400);
+        })
+    });
+
     it("Should be able to respond to query1 (200)", function() {
         var that = this;
         Log.trace("Starting test: " + that.test.title);

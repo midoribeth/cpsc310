@@ -58,32 +58,48 @@ export default class InsightFacade implements IInsightFacade {
 
     performQuery(query: QueryRequest): Promise<InsightResponse> {
         return new Promise(function (fulfill, reject) {
-
             try {
-                InsightFacade.datasetController.getDatasets();
-            } catch (err) {
-                reject({code: 424, error: "Missing courses"});
-            }
+                try {
+                    InsightFacade.datasetController.getDatasets();
+                } catch (err) {
+                    reject({code: 424, error: "Missing courses"});
+                }
 
-            let datasets: Datasets = InsightFacade.datasetController.getDatasets();
+                let datasets: Datasets = InsightFacade.datasetController.getDatasets();
 
-            var idfull:any = (query["GET"][0]);
-            var id:any= idfull.substring(0, idfull.indexOf("_"));
-            let controller = new QueryController(datasets);
-            let isValid = controller.isValid(query);
+                var idfull:any = (query["GET"][0]);
+                var id:any= idfull.substring(0, idfull.indexOf("_"));
+                let controller = new QueryController(datasets);
+                let isValid = controller.isValid(query);
 
 /*            if (datasets[id] == null) {
                 Log.trace('id null');
                 reject({code: 424, error: 'Missing id'});
             }*/
 
-            if (isValid) {
-                let result = controller.query(query);
-                fulfill({code: 200, body: result});
+                /*if (isValid) {
+                    let result = controller.query(query);
+                    fulfill({code: 200, body: result});
 
-            } else {
-                reject({code: 400, error: 'Invalid query'});
+                } else {
+                    reject({code: 400, error: 'Invalid query'});
+                }*/
+
+                try {
+                    if (isValid) {
+                        let result = controller.query(query);
+                        fulfill({code: 200, body: result});
+                    } else {
+                        reject({code: 400, err: 'Invalid query'});
+                    }
+                } catch(err) {
+                    reject({code: 400, error: err.message});
+                }
+
+
+            } catch(err) {
+                reject({code: 400, error: err.message});
             }
-        });
+            });
     }
 }
