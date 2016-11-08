@@ -4,6 +4,11 @@
 
 import Log from "../Util";
 import JSZip = require('jszip');
+import fs = require('fs');
+import parse5 = require('parse5');
+import { ASTNode } from 'parse5';
+import {ASTAttribute} from "parse5";
+
 
 /**
  * In memory representation of all datasets.
@@ -85,13 +90,13 @@ export default class DatasetController {
                     // You can depend on 'id' to differentiate how the zip should be handled,
                     // although you should still be tolerant to errors.
 
-
-
                     zip.forEach(function(relativePath: string, file: JSZipObject) {
                         if (!file.dir) { //skip the courses folder and go directly to course files inside
 
                             var p2 = file.async("string").then(function (data) { //for each course file
-
+                                if (id == 'rooms') {
+                                    that.parseDataset(data);
+                                }
                                 var coursedata = JSON.parse(data); // make file data a JSON object "coursedata"
                                 var coursename = file.name.substring(8); //substring 8 to get rid of "courses/"
                                 //Log.trace("Course Name: " + coursename); //print out JSON object associated w/ each course section
@@ -217,6 +222,43 @@ export default class DatasetController {
             path = './data/'+ id +".json";
 
         return fs.existsSync(path);
+    }
+
+    //method to parse HTML documents
+    public parseDataset(data: any): Promise<boolean> {
+        return new Promise(function (fulfill, reject) {
+            try {
+                //parse over HTML document
+                //var data1 = 'index.html';
+                var roomData: ASTNode = parse5.parse(data);
+                //Log.trace(roomData.nodeName);
+
+                printNode(roomData);
+
+                function printNode(node: ASTNode) {
+                    Log.trace(node.nodeName);
+
+                    if (node.attrs) {
+                        node.attrs.forEach(function (value: ASTAttribute) {
+                            Log.trace(value.name);
+                            Log.trace(value.value);
+                        });
+                    }
+
+                    if (node.value) {
+                        Log.trace(node.value);
+                    }
+
+                    if (node.childNodes) {
+                        node.childNodes.forEach(printNode);
+                    }
+                }
+
+            } catch (err) {
+                reject(err);
+            }
+
+        })
     }
 
 }
