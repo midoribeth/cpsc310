@@ -109,6 +109,12 @@ export default class DatasetController {
                                     if (!(typeof (coursedata.result[0]) == 'undefined')) {  //don't save courses without resultsnp
                                         for (var i = 0; i < coursedata.result.length; i++) {  //rename subject, professor and course
 
+                                            var year:any = 1900;
+                                            if(!(coursedata.result[i].Section=="overall")) {
+                                                year = coursedata.result[i].Year;
+                                            }
+
+
                                             var processedcoursedata = {
 
                                                 dept: coursedata.result[i].Subject,
@@ -121,6 +127,7 @@ export default class DatasetController {
                                                 audit: coursedata.result[i].Audit,
 
                                                 uuid: coursedata.result[i]["id"].toString(),
+                                                year: year,
 
                                             };
                                             pcdarray.push(processedcoursedata);
@@ -206,7 +213,7 @@ export default class DatasetController {
                                                             name: sname + "_" + rno,// The room id; should be rooms_shortname+"_"+rooms_number.
                                                             address: addr, //The building address. (e.g., "6245 Agronomy Road V6T 1Z4").
                                                             lat: r[0],// The latitude of the building. Instructions for getting this field are below.
-                                                            long: r[1], //The latitude of the building. Instructions for getting this field are below.
+                                                            lon: r[1], //The latitude of the building. Instructions for getting this field are below.
                                                             seats: parseInt(seats), //The number of seats in the room.
                                                             type: type, //The room type (e.g., "Small Group").
                                                             furniture: furniture, //The room type (e.g., "Classroom-Movable Tables & Chairs").
@@ -235,11 +242,17 @@ export default class DatasetController {
                     Promise.all(promises).then(function() {
                         fulfill(true);
 
-                        setTimeout(function(){  processedDataset = dict; }, 5000);
-                        setTimeout(function(){ that.save(id, processedDataset); }, 5100);
+                        if (id=="rooms") {
+                            setTimeout(function(){  processedDataset = dict; }, 3000);
+                            setTimeout(function(){ that.save(id, processedDataset); }, 3100);
+                        }
 
-                        //  processedDataset = dict; //set our dictionary to the processedDataset
-                        //  that.save(id, processedDataset);
+                        else {
+                            processedDataset = dict; //set our dictionary to the processedDataset
+                            that.save(id, processedDataset);
+                        }
+
+
                     });
 
                 }).catch(function (err) {

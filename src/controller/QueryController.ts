@@ -45,7 +45,7 @@ export default class QueryController {
                 var key: any = (qapply[b][fieldname][token]); //e.g. courses_avg
 
                 if (token == "MAX" || token == "MIN" || token == "AVG") {
-                    if (key !== datasetid2+'_avg' && key !== datasetid2+'_fail' && key !== datasetid2+'_pass' && key !== datasetid2+'_audit' && key !== datasetid2+'_lat' && key !== datasetid2+'_lon' && key!== datasetid2+'_seats') {
+                    if (key !== datasetid2+'_avg' && key !== datasetid2+'_fail' && key !== datasetid2+'_pass' && key !== datasetid2+'_audit' && key !== datasetid2+'_lat' && key !== datasetid2+'_lon' && key !== datasetid2+'_seats' && key !== datasetid2+'_year') {
                         return false;
                     }
 
