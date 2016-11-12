@@ -207,7 +207,7 @@ export default class DatasetController {
                                                             address: addr, //The building address. (e.g., "6245 Agronomy Road V6T 1Z4").
                                                             lat: r[0],// The latitude of the building. Instructions for getting this field are below.
                                                             long: r[1], //The latitude of the building. Instructions for getting this field are below.
-                                                            seats: seats, //The number of seats in the room.
+                                                            seats: parseInt(seats), //The number of seats in the room.
                                                             type: type, //The room type (e.g., "Small Group").
                                                             furniture: furniture, //The room type (e.g., "Classroom-Movable Tables & Chairs").
                                                             href: link,
