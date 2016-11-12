@@ -12,24 +12,31 @@ import {QueryRequest} from "../src/controller/QueryController";
 describe("InsightFacade", function () {
 this.timeout(30000);
     var zipFileContents: string = null;
+    var zipFileContents1: string = null;
     var sampleQuery1: any;
     var sampleQuery2: any;
     var sampleQuery3: any;
     var sampleQuery4: any;
+    var sampleQuery5: any;
+    var sampleQuery6: any;
     var facade: InsightFacade = null;
     before(function () {
         Log.info('InsightController::before() - start');
         // this zip might be in a different spot for you
         zipFileContents = new Buffer(fs.readFileSync('310courses.1.0.zip')).toString('base64');
+        zipFileContents1 = new Buffer(fs.readFileSync('310rooms.1.1.zip')).toString('base64');
         sampleQuery1 = JSON.parse(fs.readFileSync('./test/results/q4.json', 'utf8'));
         sampleQuery2 = JSON.parse(fs.readFileSync('./test/results/q5.json', 'utf8'));
         sampleQuery3 = JSON.parse(fs.readFileSync('./test/results/q6.json', 'utf8'));
         sampleQuery4 = JSON.parse(fs.readFileSync('./test/results/q7.json', 'utf8'));
+        sampleQuery5 = JSON.parse(fs.readFileSync('./test/results/q8.json', 'utf8'));
+        sampleQuery6 = JSON.parse(fs.readFileSync('./test/results/q9.json', 'utf8'));
 
         try {
             // what you delete here is going to depend on your impl, just make sure
             // all of your temporary files and directories are deleted
             fs.unlinkSync('./data/courses.json');
+            fs.unlinkSync('./data/rooms.json');
         } catch (err) {
             // silently fail, but don't crash; this is fine
             Log.warn('InsightController::before() - id.json not removed (probably not present)');
@@ -41,7 +48,7 @@ this.timeout(30000);
         facade = new InsightFacade();
     });
 
-    it("Should be able to add a new dataset (204)", function () {
+    it("Should be able to add a new courses dataset (204)", function () {
         var that = this;
         Log.trace("Starting test: " + that.test.title);
         return facade.addDataset('courses', zipFileContents).then(function (response: InsightResponse) {
@@ -51,10 +58,30 @@ this.timeout(30000);
         });
     });
 
-    it("Should be able to update an existing dataset (201)", function () {
+    it("Should be able to add a new rooms dataset (204)", function () {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        return facade.addDataset('rooms', zipFileContents1).then(function (response: InsightResponse) {
+            expect(response.code).to.equal(204);
+        }).catch(function (response: InsightResponse) {
+            expect.fail('Should not happen');
+        });
+    });
+
+    it("Should be able to update an existing courses dataset (201)", function () {
         var that = this;
         Log.trace("Starting test: " + that.test.title);
         return facade.addDataset('courses', zipFileContents).then(function (response: InsightResponse) {
+            expect(response.code).to.equal(201);
+        }).catch(function (response: InsightResponse) {
+            expect.fail('Should not happen');
+        });
+    });
+
+    it("Should be able to update an existing rooms dataset (201)", function () {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        return facade.addDataset('rooms', zipFileContents1).then(function (response: InsightResponse) {
             expect(response.code).to.equal(201);
         }).catch(function (response: InsightResponse) {
             expect.fail('Should not happen');
@@ -164,6 +191,41 @@ this.timeout(30000);
         };
         return facade.performQuery(query).then(function (response: InsightResponse) {
             expect(response.body).to.deep.equal(sampleQuery4);
+            expect(response.code).to.equal(200);
+        }).catch(function (response: InsightResponse) {
+            expect.fail('Should not happen');
+        });
+    });
+
+    it ("Should be able to respond to query5 (200)", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        let query: QueryRequest = {
+            "GET": ["rooms_fullname", "rooms_number"],
+            "WHERE": {"IS": {"rooms_shortname": "DMP"}},
+            "ORDER": { "dir": "UP", "keys": ["rooms_number"]},
+            "AS": "TABLE"
+        };
+        return facade.performQuery(query).then(function (response: InsightResponse) {
+            expect(response.body).to.deep.equal(sampleQuery5);
+            expect(response.code).to.equal(200);
+        }).catch(function (response: InsightResponse) {
+            expect.fail('Should not happen');
+        });
+    });
+
+    it ("Should be able to respond to query6 (200)", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        let query: QueryRequest = {
+            "GET": ["rooms_shortname", "numRooms"],
+            "WHERE": {"GT": {"rooms_seats": 160}},
+            "GROUP": [ "rooms_shortname" ],
+            "APPLY": [ {"numRooms": {"COUNT": "rooms_name"}} ],
+            "AS": "TABLE"
+        };
+        return facade.performQuery(query).then(function (response: InsightResponse) {
+            expect(response.body).to.deep.equal(sampleQuery6);
             expect(response.code).to.equal(200);
         }).catch(function (response: InsightResponse) {
             expect.fail('Should not happen');

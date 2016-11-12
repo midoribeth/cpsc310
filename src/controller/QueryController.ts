@@ -8,7 +8,7 @@ import Log from "../Util";
 export interface QueryRequest {
     GET: string|string[];
     WHERE: {};
-    ORDER: any;
+    ORDER?: any;
     AS:string;
     GROUP?: string|string[];
 
@@ -27,14 +27,17 @@ export default class QueryController {
 
     public isValid(query: QueryRequest): boolean {
 
-        if (typeof query["AS"] == 'undefined') {
-            return false;
-        }
-
         if (typeof query["APPLY"] !== 'undefined') {
 
             var qapply: any = query["APPLY"];
+            var datasetid2:any="";
+            let getkeys2:any= query["GET"];
+            for (var keysinget in getkeys2){
+                if (getkeys2[keysinget].indexOf("_")>=0){
+                    datasetid2=getkeys2[keysinget].split("_")[0];
 
+                }
+            }
 
             for (var b in qapply) {
                 var fieldname: any = Object.keys(qapply[b])[0];
@@ -42,8 +45,8 @@ export default class QueryController {
                 var key: any = (qapply[b][fieldname][token]); //e.g. courses_avg
 
                 if (token == "MAX" || token == "MIN" || token == "AVG") {
-                    if (key !== 'courses_avg' && key !== 'courses_fail' && key !== 'courses_pass' && key !== 'courses_audit') {
-                     return false;
+                    if (key !== datasetid2+'_avg' && key !== datasetid2+'_fail' && key !== datasetid2+'_pass' && key !== datasetid2+'_audit') {
+                        return false;
                     }
 
                 }
@@ -52,8 +55,8 @@ export default class QueryController {
         }
 
 //Log.trace(JSON.stringify(query["GROUP"]));
-     //   Log.trace(JSON.stringify(query["APPLY"]));
-      if (typeof query["GROUP"] !== undefined && JSON.stringify(query["GROUP"])=="[]"){   // empty group not valid
+        //   Log.trace(JSON.stringify(query["APPLY"]));
+        if (typeof query["GROUP"] !== undefined && JSON.stringify(query["GROUP"])=="[]"){   // empty group not valid
             return false;
         }
 
@@ -64,26 +67,26 @@ export default class QueryController {
         if (typeof query["GROUP"] !== 'undefined' && typeof query["APPLY"] == 'undefined'){
             return false; //group w/o apply
         }
-
-        if (typeof query["GROUP"] !== 'undefined'){
-            var qgroup:any= query["GROUP"];
-            for (var qk in qgroup){
-                if (qgroup[qk] !== "courses_dept" && qgroup[qk] !== "courses_id" && qgroup[qk] !== "courses_avg" && qgroup[qk] !== "courses_instructor" && qgroup[qk] !== "courses_title" && qgroup[qk] !== "courses_pass" && qgroup[qk] !== "courses_fail" && qgroup[qk] !== "courses_audit" && qgroup[qk] !== "courses_uuid")
-                    return false; //group contains valid keys
-            }
-        }
+        /*
+         if (typeof query["GROUP"] !== 'undefined'){
+         var qgroup:any= query["GROUP"];
+         for (var qk in qgroup){
+         if (qgroup[qk] !== "courses_dept" && qgroup[qk] !== "courses_id" && qgroup[qk] !== "courses_avg" && qgroup[qk] !== "courses_instructor" && qgroup[qk] !== "courses_title" && qgroup[qk] !== "courses_pass" && qgroup[qk] !== "courses_fail" && qgroup[qk] !== "courses_audit" && qgroup[qk] !== "courses_uuid")
+         return false; //group contains valid keys
+         }
+         }*/
 
         if (typeof query["GROUP"] !== 'undefined' && typeof query["GET"] !== 'undefined'){ //All keys in GROUP should be present in GET
             for (var i = 0; i < query["GROUP"].length; i++) {
                 if (query["GET"].indexOf(query["GROUP"][i]) < 0) {
-                   return false;
+                    return false;
                 }
             }
 
         }
         //----^working
 
-    //NEW:All keys in GET should be in either GROUP or APPLY.
+        //NEW:All keys in GET should be in either GROUP or APPLY.
 
         if (typeof query["APPLY"] !== 'undefined' && typeof query["GROUP"] !== 'undefined' && typeof query["GET"] !== 'undefined'){ //All keys in GROUP should be present in GET
             var applyfields5:any=[];
@@ -97,7 +100,7 @@ export default class QueryController {
 
             for (var getkey in qget) {
                 if (applyfields5.indexOf(qget[getkey]) < 0 && query["GROUP"].indexOf(qget[getkey]) < 0) {
-                   return false;
+                    return false;
                 }
             }
 
@@ -118,13 +121,13 @@ export default class QueryController {
             for (var qk in qgroup){ //every key in GROUP
 
                 if (applyfields.indexOf(qgroup[qk]) > -1) //if APPLY also contains, return false
-                  return false; //If a key appears in GROUP or in APPLY, it cannot appear in the other one.
+                    return false; //If a key appears in GROUP or in APPLY, it cannot appear in the other one.
             }
 
         }
 
 
-      //NEW: All keys in GET that are not separated by an underscore should appear in APPLY.
+        //NEW: All keys in GET that are not separated by an underscore should appear in APPLY.
         if (typeof query["GET"] !== 'undefined' && typeof query["APPLY"] !== 'undefined'){ //All keys in GROUP should be present in GET
             var applyfields6:any=[];
             for (var b in qapply){
@@ -197,8 +200,23 @@ export default class QueryController {
     public query(query: QueryRequest): QueryResponse {
         //   Log.trace('QueryController::query( ' + JSON.stringify(query) + ' )');
 
+        let datasetid:any="";
+        let getkeys:any= query["GET"];
+        for (var keysinget in getkeys){
+            if (getkeys[keysinget].indexOf("_")>=0){
+                datasetid=getkeys[keysinget].split("_")[0];
 
-        var dict: any = this.datasets["courses"];
+            }
+        }
+        //  var dict: any = this.datasets["courses"];
+
+        Log.trace(datasetid);
+        var dict: any = this.datasets[datasetid];
+
+
+        //Log.trace(dict);
+        // Log.trace(JSON.stringify(dict));
+
         var mresultarray: any = [];
 
         let querygroup: any = query["GROUP"];
@@ -223,9 +241,9 @@ export default class QueryController {
 
                 for (var i = 0, len = dict[key].result.length; i < len; i++) { //for every result in course object
                     let section = dict[key].result[i];
-                        resultarray.push(section);
-                    }
+                    resultarray.push(section);
                 }
+            }
 
             return resultarray;
         }
@@ -328,25 +346,35 @@ export default class QueryController {
 
 
             else { //base case
+
                 var lkey2: any = Object.keys(querybody[filterkey])[0];  //e.g. courses_avg, courses_fail
-                compareto = lkey2.split("_").pop();
-                comparevalue = querybody[filterkey][lkey2];
+
+
+                compareto = lkey2.split("_").pop(); //e.g. courses, avg
+                comparevalue = querybody[filterkey][lkey2]; //e.g. cp*
+                Log.trace(comparevalue);
             }
             for (var key in dict) {
 
                 for (var i = 0, len = dict[key].result.length; i < len; i++) { //for every result in course object
                     let section = dict[key].result[i];
+
                     if ((comparevalue.indexOf("*")==0) && (comparevalue.indexOf("*",1)==comparevalue.length-1)){
+
                         var cv:any = comparevalue.substring(1, comparevalue.length-1);
+
                         if (section[compareto].indexOf(cv)>=0){
                             resultarray.push(section);
                         }
                     }
+
                     else if (comparevalue.indexOf("*")==0){ //* at beg
                         var cv1:any = comparevalue.substring(1, comparevalue.length); //e.g. "he"
+
                         if (section[compareto].indexOf(cv1)==section[compareto].length-cv1.length){
                             resultarray.push(section);
                         }
+
                     }
                     else if (comparevalue.indexOf("*")==comparevalue.length-1){ //* at end
                         var cv2:any = comparevalue.substring(0, comparevalue.length-1);
@@ -354,9 +382,16 @@ export default class QueryController {
                             resultarray.push(section);
                         }
                     }
+
+
                     else if (section[compareto] == comparevalue) {   //
+
                         resultarray.push(section);
+
                     }
+
+
+
                 }
             }
 
@@ -481,16 +516,16 @@ export default class QueryController {
                 return grouparray;
             });
 
-           // Log.trace(JSON.stringify(groupedarray));
+            // Log.trace(JSON.stringify(groupedarray));
 
 
-         //   Log.trace(JSON.stringify(queryapply[1]));  //second APPLY object, e.g. {"maxFail":{"MAX":"courses_fail"}}
+            //   Log.trace(JSON.stringify(queryapply[1]));  //second APPLY object, e.g. {"maxFail":{"MAX":"courses_fail"}}
 
-           // Log.trace(Object.keys((queryapply[1]))[0]);  //field name, e.g. maxFail
+            // Log.trace(Object.keys((queryapply[1]))[0]);  //field name, e.g. maxFail
 
-           // Log.trace(JSON.stringify((queryapply[1])[Object.keys((queryapply[1]))[0]]));  // {"MAX":"courses_fail"}
-           // Log.trace(Object.keys(((queryapply[1])[Object.keys((queryapply[1]))[0]]))[0]);  // APPLY key, e.g. "MAX"
-          //  Log.trace((queryapply[1])[Object.keys((queryapply[1]))[0]]["MAX"]); // field to use
+            // Log.trace(JSON.stringify((queryapply[1])[Object.keys((queryapply[1]))[0]]));  // {"MAX":"courses_fail"}
+            // Log.trace(Object.keys(((queryapply[1])[Object.keys((queryapply[1]))[0]]))[0]);  // APPLY key, e.g. "MAX"
+            //  Log.trace((queryapply[1])[Object.keys((queryapply[1]))[0]]["MAX"]); // field to use
 
 
 // APPLY ---------------------------------------------------------
@@ -500,7 +535,7 @@ export default class QueryController {
 
                 groupedarray.forEach(function (group: any) { // for each group of courses in the array
                     mresultarray.push(group[0]);
-             })
+                })
             }
 
             for (var a in queryapply) { // for every "apply" computation you need
@@ -510,7 +545,7 @@ export default class QueryController {
                 var applykey: any = Object.keys(((queryapply[a])[fieldname]))[0]; // e.g. MAX, MIN, COUNT
                 var comparefull: any = ((queryapply[a])[Object.keys((queryapply[a]))[0]][applykey]); // field to use, e.g. courses_avg
                 var compare: any = comparefull.split("_").pop(); //e.g. avg, fail
-            //    Log.trace("TEST" + fieldname + applykey + compare);
+                //    Log.trace("TEST" + fieldname + applykey + compare);
 
                 if (applykey == "MAX") {
                     groupedarray.forEach(function (group: any) { // for each group of courses in the array
@@ -522,7 +557,7 @@ export default class QueryController {
                         }
 
                         group[0][fieldname] = (max); // add result of computation to first entry in group
-                       // mresultarray.push(group[0]); // add first result of each group to final array
+                        // mresultarray.push(group[0]); // add first result of each group to final array
                     });
                 }
 
@@ -536,7 +571,7 @@ export default class QueryController {
                         }
 
                         group[0][fieldname] = (min); // add result of computation to first entry in group
-                       // mresultarray.push(group[0]); // add first result of each group to final array
+                        // mresultarray.push(group[0]); // add first result of each group to final array
                     });
                 }
 
@@ -551,7 +586,7 @@ export default class QueryController {
                         var avg: any = Number((total / group.length).toFixed(2));
 
                         group[0][fieldname] = avg; // add result of computation to first entry in group
-                     //   mresultarray.push(group[0]); // add first result of each group to final array
+                        //   mresultarray.push(group[0]); // add first result of each group to final array
                     });
                 }
 
@@ -560,7 +595,7 @@ export default class QueryController {
                         var count: any = 0;
                         var propertyarray:any=[];
                         for (var entry in group) {  // for each ind. course in the group
-                           propertyarray.push(group[entry][compare]);
+                            propertyarray.push(group[entry][compare]);
                         }
 
                         var uniqueArray:any = propertyarray.filter(function(item:any, pos:any) {
@@ -569,7 +604,7 @@ export default class QueryController {
 
                         count=uniqueArray.length; //return length of unique array
                         group[0][fieldname] = (count); // add result of computation to first entry in group
-                    //    mresultarray.push(group[0]); // add first result of each group to final array
+                        //    mresultarray.push(group[0]); // add first result of each group to final array
                     });
                 }
 
@@ -607,13 +642,13 @@ export default class QueryController {
                         if (rkarray[rkey] == columnneeded) { //if key matches a key specified by GET
                             //Log.trace(rkarray[rkey]); // prints all keys for each course
                             //  Log.trace(resultarray[course][rkarray[rkey]]); // prints key value for dept
-                            if (!(columnneeded=="uuid" || columnneeded=="avg" || columnneeded=="dept" || columnneeded=="id" || columnneeded=="instructor" || columnneeded=="title" || columnneeded=="pass" || columnneeded=="fail" || columnneeded=="audit")) { // if key doesn't have underscore
+                            if (!(columnneeded=="uuid" || columnneeded=="avg" || columnneeded=="dept" || columnneeded=="id" || columnneeded=="instructor" || columnneeded=="title" || columnneeded=="pass" || columnneeded=="fail" || columnneeded=="audit" || columnneeded=="fullname" ||columnneeded=="fullname" || columnneeded=="shortname" || columnneeded=="number" ||columnneeded=="name" ||columnneeded=="address" ||columnneeded=="lat" ||columnneeded=="lon" ||columnneeded=="seats" ||columnneeded=="type" || columnneeded=="furniture" ||columnneeded=="href")) { // if key doesn't have underscore
                                 finalcourseinfo[columnneeded] = mresultarray[course][rkarray[rkey]]; // put that key's value into new obj
 
                             }
                             // otherwise re add courses_
 
-                            else finalcourseinfo["courses_" + columnneeded] = mresultarray[course][rkarray[rkey]]; // put that key's value into new obj
+                            else finalcourseinfo[datasetid+"_" + columnneeded] = mresultarray[course][rkarray[rkey]]; // put that key's value into new obj
 
                         }
                     }
@@ -631,108 +666,108 @@ export default class QueryController {
 
             if (orderkey.indexOf("_") >= 0) {   //if order contains underscore, remove
                 orderkey = (query["ORDER"]).split("_").pop();
-             }
+            }
             order(orderkey);
 
         }
-          else if (!(typeof query["ORDER"] == 'undefined')) {   // if order if a JSON object, use second implementation of ORDER
-                order2(query["ORDER"]);
-            }
-
-            function order2(queryorder: any) {
-
-                if (queryorder["dir"] == "UP") {  //sort nums ascending
-
-                    filteredresult.sort(function (a: any, b: any) {
-                        let returnable = 0;
-                        for (let i = 0; i < filteredresult.length && returnable == 0; i++) {
-                            if (a[queryorder["keys"][i]] < b[queryorder["keys"][i]]) {
-                                returnable = -1;
-                            }
-
-                            if (a[queryorder["keys"][i]] > b[queryorder["keys"][i]]) {
-                                returnable = 1;
-                            }
-                        }
-                        return returnable;
-
-                    })
-
-                }
-
-
-                if (queryorder["dir"] == "DOWN") {  //sort nums ascending
-
-                    filteredresult.sort(function (a: any, b: any) {
-                        let returnable = 0;
-                        for (let i = 0; i < filteredresult.length && returnable == 0; i++) {
-                            if (b[queryorder["keys"][i]] < a[queryorder["keys"][i]]) {
-                                returnable = -1;
-                            }
-
-                            if (b[queryorder["keys"][i]] > a[queryorder["keys"][i]]) {
-                                returnable = 1;
-                            }
-                        }
-                        return returnable;
-
-                    })
-
-                }
-            }
-
-
-
-
-            function order(orderkey: any) {
-                if (orderkey == "avg" || orderkey == "pass" || orderkey == "fail" || orderkey == "audit") //numerical keys
-
-                    filteredresult.sort(function (a: any, b: any) {
-                        return a["courses_" + orderkey] - b["courses_" + orderkey];
-                    });
-
-                if (orderkey == "dept" || orderkey == "id" || orderkey == "instructor" || orderkey == "title") {
-                    filteredresult.sort(function (a: any, b: any) {
-                        var stringA = a["courses_" + orderkey], stringB = b["courses_" + orderkey]
-
-                        if (stringA < stringB) {//sort string ascending
-                            return -1;
-                        } else if (stringA == stringB) {
-                            return 0;
-                        } else {
-                            return 1;
-                        }
-                    })
-                }
-
-              else if (typeof filteredresult[0][orderkey] == 'number') //numerical keys
-
-                    filteredresult.sort(function (a: any, b: any) {
-                        return a[orderkey] - b[orderkey];
-                    })
-
-              else  if (typeof filteredresult[0][orderkey] == 'string') {
-                    filteredresult.sort(function (a: any, b: any) {
-                        var stringA = a[orderkey], stringB = b[orderkey]
-
-                        if (stringA < stringB) {//sort string ascending
-                            return -1;
-                        } else if (stringA == stringB) {
-                            return 0;
-                        } else {
-                            return 1;
-                        }
-                    })
-                }
-
-
-
-
-            }
-
-
-            var result: QueryResponse = JSON.parse(JSON.stringify({render: "TABLE", result: filteredresult}));
-Log.trace(mresultarray.length);
-            return result;
+        else if (!(typeof query["ORDER"] == 'undefined')) {   // if order if a JSON object, use second implementation of ORDER
+            order2(query["ORDER"]);
         }
+
+        function order2(queryorder: any) {
+
+            if (queryorder["dir"] == "UP") {  //sort nums ascending
+
+                filteredresult.sort(function (a: any, b: any) {
+                    let returnable = 0;
+                    for (let i = 0; i < filteredresult.length && returnable == 0; i++) {
+                        if (a[queryorder["keys"][i]] < b[queryorder["keys"][i]]) {
+                            returnable = -1;
+                        }
+
+                        if (a[queryorder["keys"][i]] > b[queryorder["keys"][i]]) {
+                            returnable = 1;
+                        }
+                    }
+                    return returnable;
+
+                })
+
+            }
+
+
+            if (queryorder["dir"] == "DOWN") {  //sort nums ascending
+
+                filteredresult.sort(function (a: any, b: any) {
+                    let returnable = 0;
+                    for (let i = 0; i < filteredresult.length && returnable == 0; i++) {
+                        if (b[queryorder["keys"][i]] < a[queryorder["keys"][i]]) {
+                            returnable = -1;
+                        }
+
+                        if (b[queryorder["keys"][i]] > a[queryorder["keys"][i]]) {
+                            returnable = 1;
+                        }
+                    }
+                    return returnable;
+
+                })
+
+            }
+        }
+
+
+
+
+        function order(orderkey: any) {
+            if (orderkey == "avg" || orderkey == "pass" || orderkey == "fail" || orderkey == "audit") //numerical keys
+
+                filteredresult.sort(function (a: any, b: any) {
+                    return a[datasetid+"_" + orderkey] - b[datasetid+"_"  + orderkey];
+                });
+
+            if (orderkey == "dept" || orderkey == "id" || orderkey == "instructor" || orderkey == "title") {
+                filteredresult.sort(function (a: any, b: any) {
+                    var stringA = a[datasetid+"_"  + orderkey], stringB = b[datasetid+"_"  + orderkey]
+
+                    if (stringA < stringB) {//sort string ascending
+                        return -1;
+                    } else if (stringA == stringB) {
+                        return 0;
+                    } else {
+                        return 1;
+                    }
+                })
+            }
+
+            else if (typeof filteredresult[0][orderkey] == 'number') //numerical keys
+
+                filteredresult.sort(function (a: any, b: any) {
+                    return a[orderkey] - b[orderkey];
+                })
+
+            else  if (typeof filteredresult[0][orderkey] == 'string') {
+                filteredresult.sort(function (a: any, b: any) {
+                    var stringA = a[orderkey], stringB = b[orderkey]
+
+                    if (stringA < stringB) {//sort string ascending
+                        return -1;
+                    } else if (stringA == stringB) {
+                        return 0;
+                    } else {
+                        return 1;
+                    }
+                })
+            }
+
+
+
+
+        }
+
+
+        var result: QueryResponse = JSON.parse(JSON.stringify({render: "TABLE", result: filteredresult}));
+        Log.trace(mresultarray.length);
+        return result;
     }
+}
