@@ -231,9 +231,11 @@ export default class DatasetController {
                                                 dict[sname+"_"+rno] = finalr; //save all the room data for a building to dict[building]
                                             }
                                         });
+
+                                        promises.push(p3);
                                     }
                                 }
-                                promises.push(p3);
+                                //promises.push(p3);
 
                             });
                         });
