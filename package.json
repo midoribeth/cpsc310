@@ -31,7 +31,6 @@
     "start": "node src/App.js"
   },
   "dependencies": {
-    "json-stable-stringify": "^1.0.1",
     "jszip": "^3.1.2",
     "mochawesome": "^1.5.2",
     "parse5": "^2.2.3",
