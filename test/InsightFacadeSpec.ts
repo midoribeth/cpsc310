@@ -19,6 +19,7 @@ this.timeout(30000);
     var sampleQuery4: any;
     var sampleQuery5: any;
     var sampleQuery6: any;
+    var sampleQuery7: any;
     var facade: InsightFacade = null;
     before(function () {
         Log.info('InsightController::before() - start');
@@ -31,6 +32,7 @@ this.timeout(30000);
         sampleQuery4 = JSON.parse(fs.readFileSync('./test/results/q7.json', 'utf8'));
         sampleQuery5 = JSON.parse(fs.readFileSync('./test/results/q8.json', 'utf8'));
         sampleQuery6 = JSON.parse(fs.readFileSync('./test/results/q9.json', 'utf8'));
+        sampleQuery7 = JSON.parse(fs.readFileSync('./test/results/q10.json', 'utf8'));
 
         try {
             // what you delete here is going to depend on your impl, just make sure
@@ -232,6 +234,29 @@ this.timeout(30000);
         });
     });
 
+    it ("Should be able to respond to query7 (200)", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        let query: QueryRequest = {
+            "GET": ["rooms_fullname", "rooms_number", "rooms_seats"],
+            "WHERE": {"AND": [
+                {"GT": {"rooms_lat": 49.261292}},
+                {"LT": {"rooms_lon": -123.245214}},
+                {"LT": {"rooms_lat": 49.262966}},
+                {"GT": {"rooms_lon": -123.249886}},
+                {"IS": {"rooms_furniture": "*Movable Tables*"}}
+            ]},
+            "ORDER": { "dir": "UP", "keys": ["rooms_number"]},
+            "AS": "TABLE"
+        };
+        return facade.performQuery(query).then(function (response: InsightResponse) {
+            expect(response.body).to.deep.equal(sampleQuery7);
+            expect(response.code).to.equal(200);
+        }).catch(function (response: InsightResponse) {
+            expect.fail('Should not happen');
+        });
+    });
+
     it("Should not be able to query a resource that has not been PUT (424)", function() {
         var that = this;
         Log.trace("Starting test: " + that.test.title);
@@ -341,11 +366,57 @@ this.timeout(30000);
         });
     });
 
+    it("Non-underscore keys are not allowed in GROUP (400)", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        let query: QueryRequest = {
+            "GET": ["courses_dept", "courses_id", "courseAverage", "maxFail"],
+            "WHERE": {},
+            "GROUP": [ "coursesAverage", "courses_id" ],
+            "APPLY": [ {"courseAverage": {"AVG": "courses_avg"}}, {"maxFail": {"MAX": "courses_fail"}} ],
+            "ORDER": { "dir": "UP", "keys": ["courseAverage", "maxFail", "courses_dept", "courses_id"]},
+            "AS":"TABLE"
+        };
+        return facade.performQuery(query).then(function (response: InsightResponse) {
+            expect.fail();
+        }).catch(function (response: InsightResponse) {
+            expect(response.code).to.equal(400);
+        })
+    });
 
-    it("Should be able to delete a dataset (204)", function() {
+    it("Only keys specified for rooms and courses are permitted in GROUP", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        let query: QueryRequest = {
+            "GET": ["courses_dept", "courses_id", "courseAverage", "maxFail"],
+            "WHERE": {},
+            "GROUP": [ "courses_dept", "courses_abc" ],
+            "APPLY": [ {"courseAverage": {"AVG": "courses_avg"}}, {"maxFail": {"MAX": "courses_fail"}} ],
+            "ORDER": { "dir": "UP", "keys": ["courseAverage", "maxFail", "courses_dept", "courses_id"]},
+            "AS":"TABLE"
+        };
+        return facade.performQuery(query).then(function (response: InsightResponse) {
+            expect.fail();
+        }).catch(function (response: InsightResponse) {
+            expect(response.code).to.equal(400);
+        })
+    });
+
+    it("Should be able to delete a courses dataset (204)", function() {
         var that = this;
         Log.trace("Starting test: " + that.test.title);
         return facade.removeDataset('courses').then(function (response: InsightResponse) {
+            expect(response.code).to.equal(204);
+        }).catch(function (response: InsightResponse) {
+            expect.fail('Should not happen');
+        });
+    });
+
+
+    it("Should be able to delete a rooms dataset (204)", function() {
+        var that = this;
+        Log.trace("Starting test: " + that.test.title);
+        return facade.removeDataset('rooms').then(function (response: InsightResponse) {
             expect(response.code).to.equal(204);
         }).catch(function (response: InsightResponse) {
             expect.fail('Should not happen');
