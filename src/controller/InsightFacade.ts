@@ -90,7 +90,7 @@ export default class InsightFacade implements IInsightFacade {
                         let result = controller.query(query);
                         fulfill({code: 200, body: result});
                     } else {
-                        reject({code: 400, err: 'Invalid query'});
+                        reject({code: 400, error: 'Invalid query'});
                     }
                 } catch(err) {
                     reject({code: 400, error: err.message});

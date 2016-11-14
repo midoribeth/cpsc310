@@ -83,7 +83,8 @@ export default class DatasetController {
         let processedDataset = {};
         var dict: { [course: string]: {} } = { }; //dictionary
 
-        var promises: any=[];
+        var promises1: any=[];
+        var promises2: any=[];
 
         var p1 = new Promise(function (fulfill, reject) {
             try {
@@ -142,16 +143,22 @@ export default class DatasetController {
                                     // Log.trace("PRINT INSIDE[]: " + JSON.stringify(dict["ADHE329"])); // but if you print in the loop it works
                                 });
 
-                                promises.push(p2);
+                                promises1.push(p2);
                             }
                         });
+
+                        Promise.all(promises1).then(function() {
+                            fulfill(true);
+                            processedDataset = dict; //set our dictionary to the processedDataset
+                            that.save(id, processedDataset);
+                        })
                     }
                     if (id == "rooms"){
                         var tbodyrawhtml:any;
                         var parse5:any = require('parse5');
                         var urlmap:any = new Object();
 
-                        zip.file("index.htm").async("string").then(function (data) {
+                        var p4 = zip.file("index.htm").async("string").then(function (data) {
                             tbodyrawhtml = data.substring(data.indexOf("<tbody>"), data.indexOf("</tbody>") + 8);
                             var tbodyhtml: ASTNode = parse5.parse(tbodyrawhtml);
 
@@ -193,6 +200,7 @@ export default class DatasetController {
                                                 sname= path.substring(43, path.length);
                                                 addr= roomhtml.childNodes[0].childNodes[1].childNodes[0].childNodes[3].childNodes[0].childNodes[0].value;
                                                 var p5 = that.getlatlon(encodeURI(addr));
+                                                //p5.push(promises2);
                                                 p5.then(function(r:any) {
 
                                                     var rawtablehtml2: any = data.substring(data.indexOf('<table class="views-table cols-5 table" >'), data.indexOf("</table>") + 8);
@@ -232,30 +240,26 @@ export default class DatasetController {
                                             }
                                         });
 
-                                        promises.push(p3);
+                                        promises2.push(p3);
                                     }
                                 }
-                                //promises.push(p3);
 
                             });
                         });
-                    }
+                        promises2.push(p4);
 
-                    Promise.all(promises).then(function() {
-                        fulfill(true);
-
-                        if (id=="rooms") {
+                        Promise.all(promises2).then(function() {
+                            fulfill(true);
                             setTimeout(function(){  processedDataset = dict; }, 3000);
                             setTimeout(function(){ that.save(id, processedDataset); }, 3100);
-                        }
 
-                        else {
-                            processedDataset = dict; //set our dictionary to the processedDataset
-                            that.save(id, processedDataset);
-                        }
+                            //else {
+                                /*processedDataset = dict; //set our dictionary to the processedDataset
+                                that.save(id, processedDataset);*/
+                            //}
 
-
-                    });
+                        });
+                    }
 
                 }).catch(function (err) {
                     Log.trace('DatasetController::process(..) - unzip ERROR: ' + err.message);

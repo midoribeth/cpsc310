@@ -416,7 +416,7 @@ this.timeout(30000);
     it("Should be able to delete a rooms dataset (204)", function() {
         var that = this;
         Log.trace("Starting test: " + that.test.title);
-        return facade.removeDataset('courses').then(function (response: InsightResponse) {
+        return facade.removeDataset('rooms').then(function (response: InsightResponse) {
             expect(response.code).to.equal(204);
         }).catch(function (response: InsightResponse) {
             expect.fail('Should not happen');
