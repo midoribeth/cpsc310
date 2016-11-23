@@ -83,7 +83,8 @@ export default class DatasetController {
         let processedDataset = {};
         var dict: { [course: string]: {} } = { }; //dictionary
 
-        var promises: any=[];
+        var cPromises: any=[];
+        var rPromises: any=[];
 
         var p1 = new Promise(function (fulfill, reject) {
             try {
@@ -142,16 +143,21 @@ export default class DatasetController {
                                     // Log.trace("PRINT INSIDE[]: " + JSON.stringify(dict["ADHE329"])); // but if you print in the loop it works
                                 });
 
-                                promises.push(p2);
+                                cPromises.push(p2);
                             }
                         });
+
+                        /*Promise.all(cPromises).then(function() {
+                            processedDataset = dict; //set our dictionary to the processedDataset
+                            that.save(id, processedDataset);
+                        })*/
                     }
                     if (id == "rooms"){
                         var tbodyrawhtml:any;
                         var parse5:any = require('parse5');
                         var urlmap:any = new Object();
 
-                        zip.file("index.htm").async("string").then(function (data) {
+                        var p3 = zip.file("index.htm").async("string").then(function (data) {
                             tbodyrawhtml = data.substring(data.indexOf("<tbody>"), data.indexOf("</tbody>") + 8);
                             var tbodyhtml: ASTNode = parse5.parse(tbodyrawhtml);
 
@@ -164,8 +170,8 @@ export default class DatasetController {
                             }
 
                             return urlmap;
-
                         }).then(function (um) {
+                            rPromises.push(p3);
                             zip.forEach(function(relativePath: string, file: JSZipObject) {
                                 var rno:any;
                                 var sname:any;
@@ -182,7 +188,7 @@ export default class DatasetController {
                                 for (var entry in urlmap) { // go through every building url in index.html
 
                                     if (path ==  urlmap[entry]) {  //if that building is the current file in zip
-                                        var p3 = file.async("string").then(function (data) { //get building data
+                                        var p4 = file.async("string").then(function (data) { //get building data
 
                                             if (data.indexOf("<tbody>") >=0) {
                                                 var rawroomhtml: any = data.substring(data.indexOf('<div id="building-info">'), data.indexOf("Wayfinding map") + 32);
@@ -193,8 +199,9 @@ export default class DatasetController {
                                                 sname= path.substring(43, path.length);
                                                 addr= roomhtml.childNodes[0].childNodes[1].childNodes[0].childNodes[3].childNodes[0].childNodes[0].value;
                                                 var p5 = that.getlatlon(encodeURI(addr));
+                                                rPromises.push(p5);
                                                 p5.then(function(r:any) {
-
+                                                    //rPromises.push(p5);
                                                     var rawtablehtml2: any = data.substring(data.indexOf('<table class="views-table cols-5 table" >'), data.indexOf("</table>") + 8);
                                                     var fulltablehtml: ASTNode = parse5.parse(rawtablehtml2);
 
@@ -230,30 +237,38 @@ export default class DatasetController {
 
                                                 dict[sname+"_"+rno] = finalr; //save all the room data for a building to dict[building]
                                             }
-                                        })
+                                        });
+                                        rPromises.push(p4);
                                     }
                                 }
-                                promises.push(p3);
 
                             });
                         });
-                    }
 
-                    Promise.all(promises).then(function() {
-                        fulfill(true);
-
-                        if (id=="rooms") {
+                        /*Promise.all(rPromises).then(function() {
+                            fulfill(true);
                             setTimeout(function(){  processedDataset = dict; }, 3000);
                             setTimeout(function(){ that.save(id, processedDataset); }, 3100);
-                        }
+                            /!*processedDataset = dict; //set our dictionary to the processedDataset
+                            that.save(id, processedDataset);*!/
+                        });*/
+                    }
 
-                        else {
-                            processedDataset = dict; //set our dictionary to the processedDataset
+                    if (id == "courses") {
+                        Promise.all(cPromises).then(function () {
+                            fulfill(true);
+                            processedDataset = dict;
                             that.save(id, processedDataset);
-                        }
-
-
-                    });
+                        })
+                    } else if (id == "rooms") {
+                        Promise.all(rPromises).then(function () {
+                            //fulfill(true);
+                            /*processedDataset = dict;
+                            that.save(id, processedDataset);*/
+                            setTimeout(function() { processedDataset = dict; }, 3000);
+                            setTimeout(function() { that.save(id, processedDataset); fulfill(true);}, 3100);
+                        })
+                    }
 
                 }).catch(function (err) {
                     Log.trace('DatasetController::process(..) - unzip ERROR: ' + err.message);
