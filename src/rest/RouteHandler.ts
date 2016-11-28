@@ -20,8 +20,36 @@ export default class RouteHandler {
     private static insightFacade = new InsightFacade();
 
     public static getHomepage(req: restify.Request, res: restify.Response, next: restify.Next) {
-        Log.trace('RoutHandler::getHomepage(..)');
+        Log.trace('RouteHandler::getHomepage(..)');
         fs.readFile('./src/rest/views/index.html', 'utf8', function (err: Error, file: Buffer) {
+            if (err) {
+                res.send(500);
+                Log.error(JSON.stringify(err));
+                return next();
+            }
+            res.write(file);
+            res.end();
+            return next();
+        });
+    }
+
+    public static getCourseExplorer(req: restify.Request, res: restify.Response, next: restify.Next) {
+        Log.trace('RouteHandler::getCourseExplorer(..)');
+        fs.readFile('./src/rest/views/CourseExplorer.html', 'utf8', function (err: Error, file: Buffer) {
+            if (err) {
+                res.send(500);
+                Log.error(JSON.stringify(err));
+                return next();
+            }
+            res.write(file);
+            res.end();
+            return next();
+        });
+    }
+
+    public static getRoomScheduler(req: restify.Request, res: restify.Response, next: restify.Next) {
+        Log.trace('RouteHandler::getRoomScheduler(..)');
+        fs.readFile('./src/rest/views/RoomScheduling.html', 'utf8', function (err: Error, file: Buffer) {
             if (err) {
                 res.send(500);
                 Log.error(JSON.stringify(err));

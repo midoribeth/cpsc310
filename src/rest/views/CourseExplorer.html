@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<head>
+    <link rel="stylesheet" href="./public/bootstrap.min.css">
+    <link rel="stylesheet" href="./public/main.css">
+    <script src="./public/jquery.min.js"></script>
+    <script src="./public/bootstrap.min.js"></script>
+    <script src="./public/d3.min.js"></script>
+    <script src="./public/main.js"></script>
+</head>
+<html>
+<body>
+
+<div id="container">
+    <h3><u>Course Explorer</u></h3>
+    <form id="queryForm">
+        <font size="4"><b>Find Sections By:</b></font><br><br>
+
+
+
+        <b>Department: </b>
+        <input type="text" id="dept" list="dept-datalist" placeholder="e.g. CPSC">
+        <datalist id="dept-datalist"></datalist> <p>
+
+        <b>Course Number: </b>
+        <input type="text" id="courseno" list="courseno-datalist" placeholder="e.g. 310">
+        <datalist id="courseno-datalist"></datalist><p>
+
+        <b>Instructor: </b>
+        <input type="text" id="instructor" list="instructor-datalist" placeholder="e.g. Reid Holmes">
+        <datalist id="instructor-datalist"></datalist><p>
+
+        <b>Title: </b>
+        <input type="text" id="ctitle" list="ctitle-datalist" placeholder="e.g. Software Engineering">
+        <datalist id="ctitle-datalist"></datalist><p>
+        <p><p>
+
+        <b>Section Size: </b>
+        Less than <input type="radio" id="LT" name="sectionsize">&nbsp Greater than
+        <input type="radio" id="GT" name="sectionsize"> <input type="text" id="size" size="5" placeholder="0"><p><p></p>
+
+        <u>Order By:</u><br>
+        1) <input type="text" id="order1" list="order-datalist" placeholder="e.g. Average">
+        <datalist id="order-datalist">
+            <option value="courses_fail">
+            <option value="courses_pass">
+            <option value="courses_avg">
+
+        </datalist><p><p>
+
+        2) <input type="text" id="order2" list="order-datalist" placeholder="e.g. Average"><br>
+
+
+        3) <input type="text" id="order3" list="order-datalist" placeholder="e.g. Average">
+
+        <p><p>
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <br>
+    </form>
+    <form id="queryForm2">
+        <font size="4"><b>Find Courses By:</b></font><br><br>
+        Highest <input type="text" id="courseshighest" list="courseshighest-datalist" placeholder="e.g. Average">
+        <datalist id="courseshighest-datalist">
+            <option value="Average">
+            <option value="Sections">
+            <option value="Pass">
+            <option value="Fail">
+
+        </datalist><p>
+        Lowest <input type="text" id="courseslowest" list="courseslowest-datalist" placeholder="e.g. Average">
+        <datalist id="courseslowest-datalist">
+            <option value="Average">
+            <option value="Section">
+            <option value="Pass">
+            <option value="Fail">
+
+        </datalist><p><p>
+
+        <u>Filter by:</u><p>
+        Dept: <input type="text" id="coursesdept" placeholder="e.g. CPSC"><br>
+        Title: <input type="text" id="coursestitle" placeholder="e.g. Software Engineering"><br>
+        <b>Section Size:</b> Less than <input type="radio" id="coursesLT" name="coursessize">&nbsp Greater than
+        <input type="radio" id="coursesGT" name="coursessize"> <input type="text" id="coursessize" size="5" placeholder="0"><p>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+</div>
+
+
+
+<div id="render">
+    <h3>Result</h3>
+</div>
+
+<div class="modal fade" id="errorModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <p></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

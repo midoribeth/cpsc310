@@ -3,6 +3,8 @@
  */
 
 import restify = require('restify');
+import fs = require('fs')
+
 
 import Log from "../Util";
 import RouteHandler from './RouteHandler';
@@ -19,6 +21,8 @@ export default class Server {
         Log.info("Server::<init>( " + port + " )");
         this.port = port;
     }
+
+
 
     /**
      * Stops the server. Again returns a promise so we know when the connections have
@@ -61,6 +65,12 @@ export default class Server {
                 // Loads the homepage.
                 // curl -is  http://localhost:4321/
 		that.rest.get('/', RouteHandler.getHomepage);
+
+                that.rest.get('/CourseExplorer', RouteHandler.getCourseExplorer);
+                that.rest.get('/RoomScheduling', RouteHandler.getRoomScheduler);
+
+
+
 
                 // Sends a dataset. Is idempotent and can create or update a dataset id.
                 // curl localhost:4321/dataset/test --upload-file FNAME.zip
