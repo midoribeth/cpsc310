@@ -251,6 +251,159 @@ $(function () {
             spawnErrorModal("Query Error", err);
         }
     });
+
+
+    $("#queryForm3").submit(function (e) {
+        e.preventDefault();
+
+        var comparelat=0;
+        var comparelon=0;
+
+
+        if (document.getElementById("location").value !== "") {
+            var query2=' {"GET": ["rooms_shortname", "rooms_lat", "rooms_lon"],"WHERE": {"IS": {"rooms_shortname":'+'"'+ document.getElementById("location").value + '"' + '}}, "AS": "TABLE"}';
+            try {
+                $.ajax("/query", {
+                    type: "POST",
+                    data: query2,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (data) {
+                        if (data["render"] === "TABLE") {
+                            comparelat=(data["result"][0].rooms_lat);
+                            comparelon=(data["result"][0].rooms_lon);
+
+                        }
+                    }
+                }).fail(function (e) {
+                    spawnHttpErrorModal(e)
+                });
+            } catch (err) {
+                spawnErrorModal("Query Error", err);
+            }
+        }
+
+
+
+        //create base query
+        //since multiple ANDs don't work for our querycontroller, generate a table with first inputted form value, then remove rows based on subsequent inputs ones
+
+
+        if (document.getElementById("building").value !==""){
+            var query = '{"GET": ["rooms_fullname", "rooms_shortname", "rooms_lat", "rooms_lon", "rooms_number", "rooms_seats", "rooms_furniture", "rooms_type"], "WHERE": {"IS": {"rooms_shortname":' + '"' +  document.getElementById("building").value + '"' +'}},  "ORDER": { "dir": "UP", "keys": ["rooms_shortname"]}, "AS": "TABLE"}';
+        }
+
+        else if (document.getElementById("roomno").value !==""){
+            var query = '{"GET": ["rooms_fullname", "rooms_shortname", "rooms_lat", "rooms_lon", "rooms_number", "rooms_seats", "rooms_furniture", "rooms_type"], "WHERE": {"IS": {"rooms_number":' + '"' +  document.getElementById("roomno").value + '"' +'}}, "ORDER": { "dir": "UP", "keys": ["rooms_shortname"]}, "AS": "TABLE"}';
+        }
+
+        else if (document.getElementById("roomtype").value !==""){
+            var query = '{"GET": ["rooms_fullname", "rooms_shortname", "rooms_lat", "rooms_lon", "rooms_number", "rooms_seats", "rooms_furniture", "rooms_type"], "WHERE": {"IS": {"rooms_type":' + '"' +  document.getElementById("roomtype").value + '"' +'}}, "ORDER": { "dir": "UP", "keys": ["rooms_shortname"]},  "AS": "TABLE"}';
+        }
+
+        else if (document.getElementById("furniture").value !==""){
+            var query = '{"GET": ["rooms_fullname", "rooms_shortname", "rooms_lat", "rooms_lon", "rooms_number", "rooms_seats", "rooms_furniture", "rooms_type"], "WHERE": {"IS": {"rooms_furniture":' + '"' +  document.getElementById("furniture").value + '"' +'}}, "ORDER": { "dir": "UP", "keys": ["rooms_shortname"]},  "AS": "TABLE"}';
+        }
+
+        else if (document.getElementById("roomsize").value !==""){
+            var query = '{"GET": ["rooms_fullname", "rooms_shortname", "rooms_lat", "rooms_lon", "rooms_number", "rooms_seats", "rooms_furniture", "rooms_type"], "WHERE": {}, "ORDER": { "dir": "UP", "keys": ["rooms_shortname"]},  "AS": "TABLE"}';
+        }
+
+        else if (document.getElementById("building").value == "" && document.getElementById("roomno").value =="" && document.getElementById("roomtype").value =="" && document.getElementById("furniture").value =="" && document.getElementById("roomsize").value =="" ){
+            var query = '{"GET": ["rooms_fullname", "rooms_shortname", "rooms_lat", "rooms_lon", "rooms_number", "rooms_seats", "rooms_furniture", "rooms_type"], "WHERE": {}, "ORDER": { "dir": "UP", "keys": ["rooms_shortname"]},  "AS": "TABLE"}';
+        }
+
+
+        try {
+            $.ajax("/query", {type:"POST", data: query, contentType: "application/json", dataType: "json", success: function(data) {
+                if (data["render"] === "TABLE") {
+                    generateTable(data["result"]);  // generate table with id "test"
+
+                    if (document.getElementById("roomno").value !=="") {
+
+                        var table = document.getElementById("test"); // for the table "test"
+                        for (var i = 1, row; row = table.rows[i]; i++) { //go through every row
+                            if (table.rows[i].cells[4].innerHTML !== document.getElementById("roomno").value) { //if row's roomno doesn't match
+                                document.getElementById("test").deleteRow(i);//remove that entire row
+                                i--; // decrement i since you just deleted the row and got moved up
+                            }
+                        }
+                    }
+
+                    if (document.getElementById("roomtype").value !=="") {
+
+                        var table = document.getElementById("test"); // for the table "test"
+                        for (var i = 1, row; row = table.rows[i]; i++) { //go through every row
+                            if (table.rows[i].cells[7].innerHTML !== document.getElementById("roomtype").value) { //if row's roomno doesn't match
+                                document.getElementById("test").deleteRow(i);//remove that entire row
+                                i--; // decrement i since you just deleted the row and got moved up
+                            }
+                        }
+                    }
+
+                    if (document.getElementById("furniture").value !=="") {
+
+                        var table = document.getElementById("test"); // for the table "test"
+                        for (var i = 1, row; row = table.rows[i]; i++) { //go through every row
+                            if (table.rows[i].cells[6].innerHTML !== document.getElementById("furniture").value) { //if row's roomno doesn't match
+                                document.getElementById("test").deleteRow(i);//remove that entire row
+                                i--; // decrement i since you just deleted the row and got moved up
+                            }
+                        }
+                    }
+
+                    if (document.getElementById("roomsize").value !=="") { // if something is entered for section size
+                        var sizevalue = parseInt(document.getElementById("roomsize").value);
+
+                        if (document.getElementById("roomGT").checked) { // and GT is selected
+                            var table = document.getElementById("test"); // for the table "test"
+                            for (var i = 1, row; row = table.rows[i]; i++) { //go through every row
+                                if (parseInt(table.rows[i].cells[5].innerHTML) < sizevalue) {  // remove rows w/size less than sizevalue
+                                    document.getElementById("test").deleteRow(i);//remove that entire row
+                                    i--; // decrement i since you just deleted the row and got moved up
+                                }
+                            }
+                        }
+                        if (document.getElementById("roomLT").checked) { //and LT is selected
+                            var table = document.getElementById("test"); // for the table "test"
+                            for (var i = 1, row; row = table.rows[i]; i++) { //go through every row
+                                if (parseInt(table.rows[i].cells[5].innerHTML) > sizevalue) {  // remove rows w/size greater than than sizevalue
+                                    document.getElementById("test").deleteRow(i);//remove that entire row
+                                    i--; // decrement i since you just deleted the row and got moved up
+                                }
+                            }                                          //remove rows greater w/size than sizevalue
+                        }
+                    }
+
+
+                    if (document.getElementById("location").value !=="" && document.getElementById("locationnumber").value !=="") {
+
+                        var table = document.getElementById("test"); // for the table "test"
+                        for (var i = 1, row; row = table.rows[i]; i++) { //go through every row
+                            var lat =parseFloat(table.rows[i].cells[2].innerHTML);
+                            var lon = parseFloat(table.rows[i].cells[3].innerHTML);
+
+                            if (getDistanceFromLatLonInKm(lat,lon,comparelat,comparelon) > parseFloat(document.getElementById("locationnumber").value)) {
+                             document.getElementById("test").deleteRow(i);//remove that entire row
+                             i--; // decrement i since you just deleted the row and got moved up
+                             }
+                        }
+                    }
+
+
+                }
+
+            }}).fail(function (e) {
+                spawnHttpErrorModal(e)
+            });
+        } catch (err) {
+            spawnErrorModal("Query Error", err);
+        }
+
+
+    });
+
+
     function generateTable(data) {
         var columns = [];
         Object.keys(data[0]).forEach(function (title) {
@@ -319,12 +472,40 @@ $(function () {
         }
     }
 
+    //http://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
+
+    function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
+        var R = 6371; // Radius of the earth in km
+        var dLat = deg2rad(lat2-lat1);  // deg2rad below
+        var dLon = deg2rad(lon2-lon1);
+        var a =
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                Math.sin(dLon/2) * Math.sin(dLon/2)
+            ;
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        var d = R * c; // Distance in km
+        return d*1000;
+    }
+
+    function deg2rad(deg) {
+        return deg * (Math.PI/180)
+    }
+
+
 // Get the <datalist> and <input> elements.
     var deptdataList = document.getElementById('dept-datalist');
     var coursenodataList = document.getElementById('courseno-datalist');
     var instructordataList = document.getElementById('instructor-datalist');
     var ctitledataList = document.getElementById('ctitle-datalist');
+    var buildingdataList = document.getElementById('building-datalist');
 
+    var buildings = ["AERL", "AUDX", "BRKX", "CIRS", "EOSM", "ESB", "FRDM", "LSC", "MATX", "MGYM", "OSBO", "SRC", "WESB", "ALRD", "ANGU", "ANSO", "BIOL", "BUCH", "CEME", "CHBE", "CHEM", "DMP","FNH", "FORW", "FSC", "GEOG", "HEBB", "HENN", "IBLC", "IONA", "LASR", "LSK", "MATH", "MCLD", "MCML", "ORCH", "PCOH", "PHRM", "SCRF", "SOWK", "SPPH", "SWNG", "UCLL", "WOOD"];
+    buildings.forEach(function(item) {
+        var option = document.createElement('option');
+        option.value = item;
+        buildingdataList.appendChild(option);
+    });
 
     var dept = ["cpsc", "apsc", "engl", "comm"];
     dept.forEach(function(item) {
@@ -354,6 +535,8 @@ $(function () {
         option.value = item;
         ctitledataList.appendChild(option);
     });
+
+
 
 
 

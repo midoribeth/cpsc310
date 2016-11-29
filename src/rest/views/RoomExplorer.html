@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<head>
+    <link rel="stylesheet" href="./public/bootstrap.min.css">
+    <link rel="stylesheet" href="./public/main.css">
+    <script src="./public/jquery.min.js"></script>
+    <script src="./public/bootstrap.min.js"></script>
+    <script src="./public/d3.min.js"></script>
+    <script src="./public/main.js"></script>
+</head>
+<html>
+<body>
+
+<div id="container">
+    <h3><u>Room Explorer</u></h3>
+    <form id="queryForm3">
+        <font size="4"><b>Find Rooms By:</b></font><br><br>
+
+
+        <b>Building: </b>
+        <input type="text" id="building" list="building-datalist" placeholder="e.g. ALRD">
+        <datalist id="building-datalist">
+
+        </datalist> <p>
+
+        <b>Room Number: </b>
+        <input type="text" id="roomno" list="roomno-datalist" placeholder="e.g. 105">
+        <datalist id="roomno-datalist"></datalist><p>
+
+
+        <b>Room Type: </b>
+        <input type="text" id="roomtype" list="roomtype-datalist" placeholder="e.g. Case Style">
+        <datalist id="roomtype-datalist">
+            <option value="Case Style">
+            <option value="Open Design General Purpose">
+            <option value="Small Group">
+            <option value="Tiered Large Group">
+            <option value="Studio Lab">
+            <option value="Active Learning">
+        </datalist><p>
+        <p><p>
+
+        <b>Furniture Type: </b>
+        <input type="text" id="furniture" list="furniture-datalist" placeholder="e.g. Classroom-Learn Lab">
+        <datalist id="furniture-datalist">
+            <option value="Classroom-Fixed Tables/Movable Chairs">
+            <option value="Classroom-Movable Tables & Chairs">
+            <option value="Classroom-Moveable Tablets">
+            <option value="Classroom-Fixed Tablets">
+            <option value="Classroom-Hybrid Furniture">
+            <option value="Classroom-Learn Lab">
+        </datalist><p>
+        <p><p>
+
+        <b>Room Size: </b>
+        Less than <input type="radio" id="roomLT" name="roomsize">&nbsp Greater than
+        <input type="radio" id="roomGT" name="roomsize"> <input type="text" id="roomsize" size="5" placeholder="0"><p><p></p>
+
+
+        <b>Location: </b>
+        Within  <input type="text" id="locationnumber" size="3" placeholder="0">m of
+        <input type="text" id="location" list="building-datalist" placeholder="e.g. DMP">
+
+        <p><p>
+
+        <p><p>
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <br>
+    </form>
+
+
+
+</div>
+
+
+
+<div id="render">
+    <h3>Result</h3>
+</div>
+
+<div class="modal fade" id="errorModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <p></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
