@@ -8,6 +8,7 @@ import DatasetController from '../controller/DatasetController';
 import {Datasets} from '../controller/DatasetController';
 import QueryController from '../controller/QueryController';
 import Log from '../Util';
+import RoomSchedulingController from '../controller/RoomSchedulingController';
 
 export default class InsightFacade implements IInsightFacade {
     private static datasetController = new DatasetController();
@@ -102,4 +103,25 @@ export default class InsightFacade implements IInsightFacade {
             }
             });
     }
+
+    createSchedule(rooms: QueryRequest, courses: QueryRequest): Promise<InsightResponse> {
+        return new Promise(function (fulfill, reject) {
+            try {
+                let datasets: Datasets = InsightFacade.datasetController.getDatasets();
+                let controller = new QueryController(datasets);
+                let roomResult1: any = controller.query(rooms);
+                let roomResult2: any = roomResult1["result"];
+                let courseResult1: any = controller.query(courses);
+                let courseResult2: any = courseResult1["result"];
+                let schedController = new RoomSchedulingController();
+                let result = schedController.schedule(roomResult2, courseResult2);
+                fulfill({code: 200, body: result});
+            } catch(err) {
+                reject({code: 400, error: err.message});
+            }
+
+        })
+    }
+
+
 }

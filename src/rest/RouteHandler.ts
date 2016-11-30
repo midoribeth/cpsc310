@@ -110,6 +110,24 @@ export default class RouteHandler {
         return next();
     }
 
+    public static postSchedule(req: restify.Request, res: restify.Response, next: restify.Next) {
+        Log.trace('RouteHandler::postSchedule(..) - params: ' + JSON.stringify(req.params));
+        try {
+            let rooms: any = req.params["q1"];
+            let courses: any = req.params["q2"];
+
+            RouteHandler.insightFacade.createSchedule(rooms, courses).then(function(response: InsightResponse) {
+                res.json(response.code, response.body);
+            }).catch(function (err: InsightResponse) {
+                res.json(err.code, err.body);
+            });
+
+        } catch (err) {
+            Log.error('RouteHandler::postSchedule(..) - ERROR: ' + err.message);
+            res.send(400, {error: err.message});
+        }
+        return next();
+    }
 
 
 
@@ -187,5 +205,7 @@ export default class RouteHandler {
         }
         return next();
     }
+
+
 
 }

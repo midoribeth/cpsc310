@@ -40,4 +40,6 @@ export interface IInsightFacade {
      * fulfill should be for 2XX codes and reject for everything else.
      */
     performQuery(query: QueryRequest): Promise<InsightResponse>;
+
+    createSchedule(rooms: QueryRequest, courses: QueryRequest): Promise<InsightResponse>;
 }
