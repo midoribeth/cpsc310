@@ -79,6 +79,7 @@ export default class RoomSchedulingController {
                     var roomObj: any = rooms[i]["rooms_name"];
                     var courseObj: any = courses[j]["courses_dept"] + "_" + courses[j]["courses_id"];
                     var roomSize: any = rooms[i]["rooms_seats"];
+                    Log.trace(roomSize);
                     if (roomSize >= courseSize && roomSize - courseSize < 50) {
                         //pick times at random and delete from list as they are used so no conflicting times
                         if (times != []) {

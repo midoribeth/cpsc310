@@ -1,0 +1,8 @@
+SETUP INSTRUCTIONS: TEAM 63
+
+- open up on localhost as normal
+- click appropriate buttons to enter into "Course Explorer", "Room Explorer", "Room Scheduler"
+
+For "Novel Contribution": 
+- Go into RouteHandler and change the url within "GetHomepage" to "Map.html"
+- Rebuild and load localhost as normal; map will be loaded

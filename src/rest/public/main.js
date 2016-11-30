@@ -30,8 +30,9 @@ $(function () {
         var orderarray = '';
         for (i = 1; i < 4; i++) {
             if (document.getElementById("order" + i.toString()).value !== "") { // go through form's order inputs
-                if (document.getElementById("order"+i.toString()).value !== "courses_avg" || document.getElementById("order"+i.toString()).value !== "courses_pass" || document.getElementById("order"+i.toString()).value !== "courses_fail")// go through form's order inputs
-                    alert ("select one of courses_avg, courses_pass, courses_fail");
+                if (document.getElementById("order"+i.toString()).value !== "courses_avg" && document.getElementById("order"+i.toString()).value !== "courses_pass" && document.getElementById("order"+i.toString()).value !== "courses_fail") {// go through form's order inputs
+                    alert("select one of courses_avg, courses_pass, courses_fail");
+                }
                 orderarray += '"'+document.getElementById("order"+i.toString()).value + '"';
                 if (i !== 3) {
                     if (document.getElementById("order" + (i + 1).toString()).value !== "") { // if next input isn't blank
@@ -44,14 +45,21 @@ $(function () {
         alert(orderarray);
 
 
+
+
+
+
         if (document.getElementById("size").value !== "") {
-            if (isNaN(document.getElementbyId("size").value)) {
-                alert("Size must be numeric");
+            if (isNaN(document.getElementById("size").value) || (document.getElementById("size").value).indexOf("-") > -1) {
+                alert("Size must be numeric and positive");
             }
             var query = '{"GET": ["courses_dept", "courses_id", "courses_avg", "courses_pass", "courses_fail", "courses_instructor", "courses_title"],"WHERE": { "IS": {"courses_dept":' + '"' + document.getElementById("dept").value + '"' + '}},"ORDER": { "dir": "UP", "keys": [' + orderarray + ']},"AS": "TABLE"}';
         }
 
         else if (document.getElementById("dept").value !== "") {
+            if (document.getElementById("dept").value.length != 4) {
+                alert("Department not valid");
+            }
             var query = '{"GET": ["courses_dept", "courses_id", "courses_avg", "courses_pass", "courses_fail", "courses_instructor", "courses_title"],"WHERE": { "IS": {"courses_dept":' + '"' + document.getElementById("dept").value + '"' + '}},"ORDER": { "dir": "UP", "keys": [' + orderarray + ']},"AS": "TABLE"}';
         }
 
@@ -63,8 +71,12 @@ $(function () {
             var query = '{"GET": ["courses_dept", "courses_id", "courses_avg", "courses_pass", "courses_fail", "courses_instructor", "courses_title"],"WHERE": { "IS": {"courses_instructor:' + '"' + document.getElementById("instructor").value + '"' + '}},"ORDER": { "dir": "UP", "keys": [' + orderarray + ']},"AS": "TABLE"}';
         }
 
-        else if (document.getElementById("title").value !== "") {
-            var query = '{"GET": ["courses_dept", "courses_id", "courses_avg", "courses_pass", "courses_fail", "courses_instructor", "courses_title"],"WHERE": { "IS": {"courses_title":' + '"' + document.getElementById("title").value + '"' + '}},"ORDER": { "dir": "UP", "keys": [' + orderarray + ']},"AS": "TABLE"}';
+        else if (document.getElementById("ctitle").value !== "") {
+            var query = '{"GET": ["courses_dept", "courses_id", "courses_avg", "courses_pass", "courses_fail", "courses_instructor", "courses_title"],"WHERE": { "IS": {"courses_title":' + '"' + document.getElementById("ctitle").value + '"' + '}},"ORDER": { "dir": "UP", "keys": [' + orderarray + ']},"AS": "TABLE"}';
+        }
+        else if (document.getElementById("ctitle").value == "" && document.getElementById("instructor").value == "") {
+            alert("else");
+            var query = '{"GET": ["courses_dept", "courses_id", "courses_avg", "courses_pass", "courses_fail", "courses_instructor", "courses_title"],"WHERE": {}, "AS": "TABLE"}';
         }
 
         // create table
@@ -315,6 +327,9 @@ $(function () {
         }
 
         else if (document.getElementById("roomsize").value !== "") {
+            if (document.getElementById("roomsize").value.indexOf("-") > -1) {
+                alert("Can't have negative size.");
+            }
             var query = '{"GET": ["rooms_fullname", "rooms_shortname", "rooms_lat", "rooms_lon", "rooms_number", "rooms_seats", "rooms_furniture", "rooms_type"], "WHERE": {}, "ORDER": { "dir": "UP", "keys": ["rooms_shortname"]},  "AS": "TABLE"}';
         }
 
@@ -387,6 +402,10 @@ $(function () {
 
 
                         if (document.getElementById("location").value !== "" && document.getElementById("locationnumber").value !== "") {
+
+                            if (document.getElementById("locationnumber").value.indexOf("-") > -1) {
+                                alert("Can't have a negative distance.");
+                            }
 
                             var table = document.getElementById("test"); // for the table "test"
                             for (var i = 1, row; row = table.rows[i]; i++) { //go through every row
