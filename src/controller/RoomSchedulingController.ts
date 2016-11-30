@@ -33,6 +33,7 @@ export default class RoomSchedulingController {
 
         //creating time array
         var times:any = ["MWF: 0800", "MWF: 0900", "MWF: 1000", "MWF: 1100", "MWF: 1200", "MWF: 1300", "MWF: 1400", "MWF: 1500", "MWF: 1600", "Tues/Thurs: 0800", "Tues/Thurs: 0930", "Tues/Thurs: 1100", "Tues/Thurs: 1230", "Tues/Thurs: 1400", "Tues/Thurs: 1530"];
+        var timesOutside: any = ["MWF: 1700", "MWF: 1800", "MWF: 1900", "Tues/Thurs: 1700", "Tues/Thurs: 1830"];
 
 
         //calculating number of sections that need to be scheduled
@@ -64,6 +65,9 @@ export default class RoomSchedulingController {
         var courseSize:any = sorted[0];
         Log.trace(courseSize);
 
+        //var to count number of times we have to use the times outside of the 8-5 time frame
+        var outside:any = 0;
+
 
 
         for (var i=0; i<rooms.length; i++) {
@@ -73,8 +77,14 @@ export default class RoomSchedulingController {
                 var roomSize:any = rooms[i]["rooms_seats"];
                 if (roomSize >= courseSize && roomSize-courseSize < 50) {
                     //pick times at random and delete from list as they are used so no conflicting times
-                    var timeObj:any = times[Math.floor(Math.random()*times.length)];
-                    times.splice(times.indexOf(timeObj), 1);
+                    if (times != []) {
+                        var timeObj: any = times[Math.floor(Math.random() * times.length)];
+                        times.splice(times.indexOf(timeObj), 1);
+                    } else {
+                        outside += 1;
+                        var timeObj: any = timesOutside[Math.floor(Math.random() * timesOutside.length)];
+                        timesOutside.splice(timesOutside.indexOf(timeObj), 1);
+                    }
                     if (pairs.length < numSections) {
                         pairs.push({room: roomObj, course: courseObj, time: timeObj});
                     } else {
@@ -83,9 +93,11 @@ export default class RoomSchedulingController {
                 }
             }
         }
+
+        var quality: any = 100 - outside/numSections;
         //Log.trace(JSON.stringify(pairs));
 
-        var result: SchedulingResponse = JSON.parse(JSON.stringify({render: "TABLE", result: pairs}));
+        var result: SchedulingResponse = JSON.parse(JSON.stringify({render: "TABLE", result: pairs, quality: quality + "% of classes scheduled between 8am-5pm"}));
 
 
         return result;
