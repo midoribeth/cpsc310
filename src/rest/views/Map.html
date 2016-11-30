@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="./public/bootstrap.min.css">
+    <link rel="stylesheet" href="./public/main.css">
+    <script src="./public/jquery.min.js"></script>
+    <script src="./public/bootstrap.min.js"></script>
+    <script src="./public/d3.min.js"></script>
+    <script src="./public/main.js"></script>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Simple Polylines</title>
+    <style>
+        /* Always set the map height explicitly to define the size of the div
+         * element that contains the map. */
+
+        #container {
+            height: 100%;
+            width: 100%;
+            float:left;
+        }
+
+        #map {
+            height: 100%;
+            width: 50%;
+            float:left;
+        }
+
+        #side{
+            height: 100%;
+            width:40%;
+            float:right;
+            padding-left:0px;
+            padding-top:20px;
+
+        }
+        /* Optional: Makes the sample page fill the window. */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+
+<div id="map"></div>
+
+
+<script>
+
+    var flightPlanCoordinates = [
+    ];
+
+var map;
+
+function initMap() {
+    map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 15,
+        center: {lat: 49.26372, lng: -123.25099},
+        mapTypeId: 'terrain'
+    });
+}
+
+
+</script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBhApwR3vhPUKJRMr_UWeBBHZtB1GbOba4&callback=initMap">
+</script>
+
+
+<div id="side">
+
+    <h3><u>Map Explorer</u></h3><p>
+    <form id="queryForm4">
+
+    <b>Building 1: </b>
+
+    <input type="text" id="b1" list="building-datalist" placeholder="e.g. DMP"><p>
+        <datalist id="building-datalist">
+
+        </datalist>
+
+    <b>Building 2: </b>
+
+    <input type="text" id="b2" list="building-datalist" placeholder="e.g. DMP"><br><p>
+
+
+    <b>Building 3: </b>
+
+    <input type="text" id="b3" list="building-datalist" placeholder="e.g. DMP"><br><p>
+
+
+    <b>Building 4: </b>
+
+    <input type="text" id="b4" list="building-datalist" placeholder="e.g. DMP"><br><p>
+
+
+    <b>Building 5: </b>
+
+    <input type="text" id="b5" list="building-datalist" placeholder="e.g. DMP"><br><p>
+
+    <p>
+    <button onclick="myFunction()">Submit</button>
+    <span id="d"></span>
+    <br>
+
+</form>
+
+    <script>
+
+        var buildingdataList = document.getElementById('building-datalist');
+
+        var buildings = ["AERL", "AUDX", "BRKX", "CIRS", "EOSM", "ESB", "FRDM", "LSC", "MATX", "MGYM", "OSBO", "SRC", "WESB", "ALRD", "ANGU", "ANSO", "BIOL", "BUCH", "CEME", "CHBE", "CHEM", "DMP","FNH", "FORW", "FSC", "GEOG", "HEBB", "HENN", "IBLC", "IONA", "LASR", "LSK", "MATH", "MCLD", "MCML", "ORCH", "PCOH", "PHRM", "SCRF", "SOWK", "SPPH", "SWNG", "UCLL", "WOOD"];
+        buildings.forEach(function(item) {
+            var option = document.createElement('option');
+            option.value = item;
+            buildingdataList.appendChild(option);
+        });
+
+
+        function myFunction() {
+
+            flightPlanCoordinates=[]; //clear array
+
+            for (i=1; i<6; i++) {
+                var lat=0;
+                var lon=0;
+
+                if (document.getElementById("b"+i.toString()).value !==""){
+                    var query = '{"GET": ["rooms_shortname", "rooms_lat", "rooms_lon"], "WHERE": {"IS": {"rooms_shortname":' + '"' +  document.getElementById("b"+i.toString()).value + '"' +'}},  "ORDER": { "dir": "UP", "keys": ["rooms_shortname"]}, "AS": "TABLE"}';
+                }
+
+                try {
+                    $.ajax("/query", {
+                        type: "POST",
+                        data: query,
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (data) {
+                            if (data["render"] === "TABLE") {
+                                lat=((data["result"][0].rooms_lat));
+                                lon=((data["result"][0].rooms_lon));
+                                flightPlanCoordinates.push({lat: lat, lng: lon});
+                                console.log(lat);
+                                console.log(lon);
+
+                                var i = new google.maps.Marker({
+                                    position: {lat: lat, lng: lon},
+                                    map: map,
+                                    icon: image
+                                });
+                            }
+                        }
+
+                    }).fail(function (e) {
+                        spawnHttpErrorModal(e)
+                    });
+                } catch (err) {
+                    spawnErrorModal("Query Error", err);
+                }
+            }
+
+
+            setTimeout(function(){
+
+                flightPath = new google.maps.Polyline({
+                    path: flightPlanCoordinates,
+                    geodesic: true,
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 1.0,
+                    strokeWeight: 2
+                });
+                flightPath.setMap(map);
+
+
+                google.maps.LatLng.prototype.kmTo = function(a){
+                    var e = Math, ra = e.PI/180;
+                    var b = this.lat() * ra, c = a.lat() * ra, d = b - c;
+                    var g = this.lng() * ra - a.lng() * ra;
+                    var f = 2 * e.asin(e.sqrt(e.pow(e.sin(d/2), 2) + e.cos(b) * e.cos
+                                    (c) * e.pow(e.sin(g/2), 2)));
+                    return f * 6378.137;
+                }
+
+                google.maps.Polyline.prototype.inKm = function(n){
+                    var a = this.getPath(n), len = a.getLength(), dist = 0;
+                    for(var i=0; i<len-1; i++){
+                        dist += a.getAt(i).kmTo(a.getAt(i+1));
+                    }
+                    return dist*1000;
+                }
+
+                document.getElementById("d").innerHTML= "Distance: " + flightPath.inKm()+ "m";
+
+            }, 4000);
+
+            var image = 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png';
+            var i=0;
+
+        }
+
+    </script>
+
+</div>
+</div>
+
+</body>
+</html>

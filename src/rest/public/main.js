@@ -404,6 +404,14 @@ $(function () {
     });
 
 
+    $("#queryForm4").submit(function (e) {
+        e.preventDefault();
+
+
+
+    });
+
+
     function generateTable(data) {
         var columns = [];
         Object.keys(data[0]).forEach(function (title) {
@@ -491,6 +499,7 @@ $(function () {
     function deg2rad(deg) {
         return deg * (Math.PI/180)
     }
+
 
 
 // Get the <datalist> and <input> elements.
