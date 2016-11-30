@@ -47,6 +47,20 @@ export default class RouteHandler {
         });
     }
 
+    public static getRoomExplorer(req: restify.Request, res: restify.Response, next: restify.Next) {
+        Log.trace('RouteHandler::getRoomExplorer(..)');
+        fs.readFile('./src/rest/views/RoomExplorer.html', 'utf8', function (err: Error, file: Buffer) {
+            if (err) {
+                res.send(500);
+                Log.error(JSON.stringify(err));
+                return next();
+            }
+            res.write(file);
+            res.end();
+            return next();
+        });
+    }
+
     public static getRoomScheduler(req: restify.Request, res: restify.Response, next: restify.Next) {
         Log.trace('RouteHandler::getRoomScheduler(..)');
         fs.readFile('./src/rest/views/RoomScheduling.html', 'utf8', function (err: Error, file: Buffer) {

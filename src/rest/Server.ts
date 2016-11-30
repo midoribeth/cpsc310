@@ -67,6 +67,7 @@ export default class Server {
 		that.rest.get('/', RouteHandler.getHomepage);
 
                 that.rest.get('/CourseExplorer', RouteHandler.getCourseExplorer);
+                that.rest.get('/RoomExplorer', RouteHandler.getRoomExplorer);
                 that.rest.get('/RoomScheduling', RouteHandler.getRoomScheduler);
 
 
